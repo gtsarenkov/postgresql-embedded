@@ -1,0 +1,62 @@
+plugins {
+  id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+}
+apply plugin: "java"
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+group = "ru.yandex.qatools.embed"
+version = "${embeddedPostgresqlVersion}"
+
+repositories {
+  jcenter()
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootPluginVersion}"
+  }
+}
+
+
+dependencies {
+  implementation "de.flapdoodle.embed:de.flapdoodle.embed.process:${embedProcessVersion}"
+  implementation "commons-io:commons-io:${commonsIoVersion}"
+  implementation "org.postgresql:postgresql:${postgresqlJdbcVersion}"
+
+  testImplementation ("org.springframework:spring-beans")  {
+    exclude module: "spring-boot-starter-logging"
+    exclude module: "logback-classic"
+  }
+  testImplementation ("org.springframework:spring-core")  {
+    exclude module: "spring-boot-starter-logging"
+    exclude module: "logback-classic"
+  }
+  testImplementation ("org.springframework:spring-context")  {
+    exclude module: "spring-boot-starter-logging"
+    exclude module: "logback-classic"
+  }
+  testImplementation ("org.springframework:spring-test")  {
+    exclude module: "spring-boot-starter-logging"
+    exclude module: "logback-classic"
+  }
+  testImplementation "org.junit.jupiter:junit-jupiter-api"
+  //TODO: update to 5.x
+  //testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+  testImplementation "org.junit.vintage:junit-vintage-engine"
+  testImplementation "junit:junit:${junitVersion}"
+  testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+  testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
+  testImplementation "org.kubek2k:springockito:${springOckitoVersion}"
+  testImplementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+  testImplementation "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+  testImplementation "org.slf4j:jul-to-slf4j:${slf4jVersion}"
+}
+
+test {
+  useJUnitPlatform ()
+  ignoreFailures = true
+  reports {
+    html.enabled = true
+  }
+}
