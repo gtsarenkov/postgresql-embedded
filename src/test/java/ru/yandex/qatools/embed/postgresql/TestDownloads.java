@@ -19,7 +19,8 @@ public class TestDownloads {
 
     /** Version 11 binary downloads are available for OS X and Windows 64 bit only */
     private boolean supported(Distribution distribution) {
-        if (! distribution.getVersion().asInDownloadPath().startsWith("11.")) {
+        if (distribution.getVersion().asInDownloadPath().startsWith("9.")
+            || distribution.getVersion().asInDownloadPath().startsWith("10.")) {
             return true;
         }
         switch (distribution.getPlatform()) {

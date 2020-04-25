@@ -13,6 +13,7 @@ velocity.log
 !.idea/runConfigurations/
 !.idea/encodings.xml
 !.idea/inspectionProfiles/
+out/*
 *.iml
 *.ipr
 *.iws

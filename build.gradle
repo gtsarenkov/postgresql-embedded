@@ -1,9 +1,11 @@
 plugins {
   id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+  id "com.github.ben-manes.versions" version "${dependencyUpdatePluginVersion}"
 }
 apply plugin: "java"
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 
 group = "ru.yandex.qatools.embed"
 version = "${embeddedPostgresqlVersion}"
@@ -17,7 +19,6 @@ dependencyManagement {
     mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootPluginVersion}"
   }
 }
-
 
 dependencies {
   implementation "de.flapdoodle.embed:de.flapdoodle.embed.process:${embedProcessVersion}"
@@ -59,4 +60,19 @@ test {
   reports {
     html.enabled = true
   }
+}
+
+jar {
+  into("META-INF/maven/$project.group/$project.name") {
+    from { generatePomFileForMavenJavaPublication }
+    rename ".*", "pom.xml"
+  }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
