@@ -113,6 +113,12 @@ public class PackagePaths implements IPackageResolver {
             case B32:
                 switch (distribution.getPlatform()) {
                     case Windows:
+                        switch (downloadVersion) {
+                          case "9.5.21-1":
+                            downloadVersion = "9.5.21-3";
+                            break;
+                        }
+                        break;
                     case Linux:
                     case OS_X:
                         break;

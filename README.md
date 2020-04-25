@@ -6,6 +6,10 @@
 Embedded PostgreSQL server provides a platform neutral way for running postgres binaries in unittests.
 This library is based on [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process). 
 
+## Gradle build
+Use gradle to make Jar out of this repository. Maven's pom.xml is not updated (at least now).
+Version is extended with snapshot suffix but there is not binary distribution available. To use any project you need to complile it.
+
 ## Note: this project is not being actively maintained anymore
 Sorry for any inconvinience, but this project needs active maintainers. If anyone is interested in becoming the maintainer - please let me ([@smecsia](https://github.com/smecsia)) know.
 
