@@ -16,3 +16,6 @@ velocity.log
 *.iml
 *.ipr
 *.iws
+
+.gradle
+build/*
