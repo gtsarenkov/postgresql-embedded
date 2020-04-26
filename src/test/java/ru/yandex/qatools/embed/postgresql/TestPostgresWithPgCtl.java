@@ -2,12 +2,11 @@ package ru.yandex.qatools.embed.postgresql;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,7 +30,7 @@ public class TestPostgresWithPgCtl {
     public void setUp() throws Exception {
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(
                 new RuntimeConfigBuilder().defaults(Command.PgCtl).build());
-        final PostgresConfig config = new PostgresConfig(Version.Main.PRODUCTION, new AbstractPostgresConfig.Net(
+        final PostgresConfig config = new PostgresConfig(PostgreSQLVersion.Main.PRODUCTION, new AbstractPostgresConfig.Net(
                 "localhost", findFreePort()
         ), new AbstractPostgresConfig.Storage("test"), new AbstractPostgresConfig.Timeout(),
                 new AbstractPostgresConfig.Credentials("user", "password"), Command.PgCtl);

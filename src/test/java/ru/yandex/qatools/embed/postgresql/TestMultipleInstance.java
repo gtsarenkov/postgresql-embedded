@@ -1,7 +1,7 @@
 package ru.yandex.qatools.embed.postgresql;
 
 import org.junit.Test;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,7 +19,7 @@ public class TestMultipleInstance {
         checkVersion(postgres0, "PostgreSQL 10.");
         postgres0.stop();
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(Version.Main.V9_6);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V9_6);
         start(postgres1);
         checkVersion(postgres1, "PostgreSQL 9.6");
         postgres1.stop();
@@ -42,10 +42,10 @@ public class TestMultipleInstance {
 
     @Test
     public void itShouldAllowToRunTwoInstancesAtSameTimeAndWithDifferentVersions() throws Exception {
-        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(Version.Main.V9_6);
+        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(PostgreSQLVersion.Main.V9_6);
         start(postgres0);
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(Version.Main.V10);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V10);
         start(postgres1);
 
         checkVersion(postgres0, "PostgreSQL 9.6");

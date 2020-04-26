@@ -1,7 +1,7 @@
 package ru.yandex.qatools.embed.postgresql.config;
 
 import de.flapdoodle.embed.process.config.ExecutableProcessConfig;
-import de.flapdoodle.embed.process.distribution.IVersion;
+import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.io.file.Files;
 import ru.yandex.qatools.embed.postgresql.Command;
 import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
@@ -37,7 +37,7 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig> e
         this(config, Command.Postgres);
     }
 
-    public AbstractPostgresConfig(IVersion version, Net network, Storage storage, Timeout timeout, Credentials cred, SupportConfig supportConfig) {
+    public AbstractPostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, SupportConfig supportConfig) {
         super(version, supportConfig);
         this.network = network;
         this.timeout = timeout;
@@ -45,7 +45,7 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig> e
         this.credentials = cred;
     }
 
-    public AbstractPostgresConfig(IVersion version, Net network, Storage storage, Timeout timeout) {
+    public AbstractPostgresConfig(Version version, Net network, Storage storage, Timeout timeout) {
         this(version, network, storage, timeout, null, new SupportConfig(Command.Postgres));
     }
 

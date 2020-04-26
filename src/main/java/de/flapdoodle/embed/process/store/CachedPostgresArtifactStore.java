@@ -1,22 +1,18 @@
 package de.flapdoodle.embed.process.store;
 
 import de.flapdoodle.embed.process.config.store.FileSet;
-import de.flapdoodle.embed.process.config.store.FileType;
-import de.flapdoodle.embed.process.config.store.IDownloadConfig;
+import de.flapdoodle.embed.process.config.store.DownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
-import de.flapdoodle.embed.process.extract.IExtractedFileSet;
+import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.extract.ITempNaming;
 import de.flapdoodle.embed.process.extract.ImmutableExtractedFileSet.Builder;
-import de.flapdoodle.embed.process.io.directories.IDirectory;
+import de.flapdoodle.embed.process.io.directories.Directory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 
-import static de.flapdoodle.embed.process.config.store.FileType.Executable;
-import static de.flapdoodle.embed.process.config.store.FileType.Library;
 import static de.flapdoodle.embed.process.extract.ImmutableExtractedFileSet.builder;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Paths.get;
@@ -25,10 +21,10 @@ import static org.apache.commons.io.filefilter.TrueFileFilter.TRUE;
 
 public class CachedPostgresArtifactStore extends PostgresArtifactStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedPostgresArtifactStore.class);
-    private IDownloadConfig downloadConfig;
-    private IDirectory eDir;
+    private final DownloadConfig downloadConfig;
+    private final Directory eDir;
 
-    public CachedPostgresArtifactStore(IDownloadConfig downloadConfig, IDirectory eDir,
+    public CachedPostgresArtifactStore(DownloadConfig downloadConfig, Directory eDir,
                                        ITempNaming executableNaming, IDownloader downloader) {
         super(downloadConfig, eDir, executableNaming, downloader);
         this.downloadConfig = downloadConfig;
@@ -36,26 +32,27 @@ public class CachedPostgresArtifactStore extends PostgresArtifactStore {
     }
 
     @Override
-    public void removeFileSet(Distribution distribution, IExtractedFileSet all) {
+    public void removeFileSet(Distribution distribution, ExtractedFileSet all) {
         // do nothing
     }
 
     @Override
-    public IExtractedFileSet extractFileSet(Distribution distribution) throws IOException {
+    public ExtractedFileSet extractFileSet(Distribution distribution) {
         try {
             final File dir = this.eDir.asFile();
-            final FileSet filesSet = downloadConfig.getPackageResolver().getFileSet(distribution);
+            final FileSet filesSet = downloadConfig.getPackageResolver().packageFor (distribution).fileSet ();
             final Path path = get(dir.getPath(),
-                    "pgsql" + "-" + distribution.getVersion().asInDownloadPath(), "pgsql");
+                    "pgsql" + "-" + distribution.version ().asInDownloadPath(), "pgsql");
             if (exists(path)) {
                 final Builder extracted = builder(dir).baseDirIsGenerated(false);
                 iterateFiles(path.toFile(), TRUE, TRUE).forEachRemaining(file -> {
-                    FileType type = Library;
                     if (filesSet.entries().stream()
                             .anyMatch(entry -> entry.matchingPattern().matcher(file.getPath()).matches())) {
-                        type = Executable;
+                        extracted.executable (file);
                     }
-                    extracted.file(type, file);
+                    else {
+                      extracted.addLibraryFiles (file);
+                    }
                 });
                 return extracted.build();
             } else {

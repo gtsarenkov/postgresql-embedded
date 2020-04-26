@@ -12,6 +12,10 @@ version = "${embeddedPostgresqlVersion}"
 
 repositories {
   jcenter()
+  flatDir {
+    // Location for custom compiled embedded process library.
+    dirs "../de.flapdoodle.embed.process/target"
+  }
 }
 
 dependencyManagement {
@@ -23,7 +27,12 @@ dependencyManagement {
 dependencies {
   implementation "de.flapdoodle.embed:de.flapdoodle.embed.process:${embedProcessVersion}"
   implementation "commons-io:commons-io:${commonsIoVersion}"
+  implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+  implementation "org.apache.commons:commons-compress:${commonsCompressVersion}"
   implementation "org.postgresql:postgresql:${postgresqlJdbcVersion}"
+  implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+  runtimeOnly "net.java.dev.jna:jna:${jnaPlatformVersion}"
+  runtimeOnly "net.java.dev.jna:jna-platform:${jnaPlatformVersion}"
 
   testImplementation ("org.springframework:spring-beans")  {
     exclude module: "spring-boot-starter-logging"

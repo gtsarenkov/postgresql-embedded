@@ -20,11 +20,11 @@
  */
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.distribution.Platform;
-import de.flapdoodle.embed.process.extract.IExtractedFileSet;
+import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Processors;
 import de.flapdoodle.embed.process.io.StreamToLineProcessor;
 import de.flapdoodle.embed.process.io.file.Files;
@@ -52,12 +52,12 @@ import static java.util.UUID.randomUUID;
 class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, InitDbProcess> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitDbProcess.class);
 
-    public InitDbProcess(Distribution distribution, PostgresConfig config, IRuntimeConfig runtimeConfig, E executable) throws IOException {
+    public InitDbProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, E executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
     }
 
     @Override
-    protected List<String> getCommandLine(Distribution distribution, PostgresConfig config, IExtractedFileSet exe)
+    protected List<String> getCommandLine(Distribution distribution, PostgresConfig config, ExtractedFileSet exe)
             throws IOException {
         List<String> ret = new ArrayList<>();
         ret.add(exe.executable().getAbsolutePath());
@@ -71,18 +71,18 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
                     "--pwfile=" + pwFile.getAbsolutePath()
             ));
         }
-        if (distribution.getPlatform() == Platform.Windows) {
+        if (distribution.platform() == Platform.Windows) {
             ret.addAll(config.getAdditionalInitDbParams());
         }
         ret.add(config.storage().dbDir().getAbsolutePath());
-        if (distribution.getPlatform() != Platform.Windows) {
+        if (distribution.platform() != Platform.Windows) {
             ret.addAll(config.getAdditionalInitDbParams());
         }
         return ret;
     }
 
     @Override
-    protected void onAfterProcessStart(ProcessControl process, IRuntimeConfig runtimeConfig) throws IOException {
+    protected void onAfterProcessStart(ProcessControl process, RuntimeConfig runtimeConfig) {
         final ProcessOutput outputConfig = runtimeConfig.getProcessOutput();
         final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(
                 "performing post-bootstrap initialization",

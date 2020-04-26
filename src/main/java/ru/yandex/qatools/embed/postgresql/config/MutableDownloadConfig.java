@@ -1,28 +1,30 @@
 package ru.yandex.qatools.embed.postgresql.config;
 
-import de.flapdoodle.embed.process.config.store.IDownloadPath;
-import de.flapdoodle.embed.process.config.store.IPackageResolver;
-import de.flapdoodle.embed.process.config.store.IProxyFactory;
-import de.flapdoodle.embed.process.config.store.ITimeoutConfig;
+import de.flapdoodle.embed.process.config.store.DistributionDownloadPath;
+import de.flapdoodle.embed.process.config.store.PackageResolver;
+import de.flapdoodle.embed.process.config.store.ProxyFactory;
+import de.flapdoodle.embed.process.config.store.TimeoutConfig;
 import de.flapdoodle.embed.process.extract.ITempNaming;
-import de.flapdoodle.embed.process.io.directories.IDirectory;
-import de.flapdoodle.embed.process.io.progress.IProgressListener;
+import de.flapdoodle.embed.process.io.directories.Directory;
+import de.flapdoodle.embed.process.io.progress.ProgressListener;
+
+import java.util.Optional;
 
 public class MutableDownloadConfig implements IMutableDownloadConfig {
 
-    private final IDownloadPath downloadPath;
-    private final IProgressListener progressListener;
-    private final IDirectory artifactStorePath;
+    private final DistributionDownloadPath downloadPath;
+    private final ProgressListener progressListener;
+    private final Directory artifactStorePath;
     private final ITempNaming fileNaming;
     private final String downloadPrefix;
     private final String userAgent;
-    private final ITimeoutConfig timeoutConfig;
-    private final IProxyFactory proxyFactory;
-    private IPackageResolver packageResolver;
+    private final TimeoutConfig timeoutConfig;
+    private final ProxyFactory proxyFactory;
+    private PackageResolver packageResolver;
 
-    public MutableDownloadConfig(IDownloadPath downloadPath, String downloadPrefix, IPackageResolver packageResolver,//NOSONAR
-                                 IDirectory artifactStorePath, ITempNaming fileNaming, IProgressListener progressListener, String userAgent,//NOSONAR
-                                 ITimeoutConfig timeoutConfig, IProxyFactory proxyFactory) { //NOSONAR
+    public MutableDownloadConfig(DistributionDownloadPath downloadPath, String downloadPrefix, PackageResolver packageResolver,//NOSONAR
+                                 Directory artifactStorePath, ITempNaming fileNaming, ProgressListener progressListener, String userAgent,//NOSONAR
+                                 TimeoutConfig timeoutConfig, ProxyFactory proxyFactory) { //NOSONAR
         super();
         this.downloadPath = downloadPath;
         this.downloadPrefix = downloadPrefix;
@@ -36,17 +38,17 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     }
 
     @Override
-    public IDownloadPath getDownloadPath() {
+    public DistributionDownloadPath getDownloadPath() {
         return downloadPath;
     }
 
     @Override
-    public IProgressListener getProgressListener() {
+    public ProgressListener getProgressListener() {
         return progressListener;
     }
 
     @Override
-    public IDirectory getArtifactStorePath() {
+    public Directory getArtifactStorePath() {
         return artifactStorePath;
     }
 
@@ -66,22 +68,22 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     }
 
     @Override
-    public IPackageResolver getPackageResolver() {
+    public PackageResolver getPackageResolver() {
         return packageResolver;
     }
 
     @Override
-    public void setPackageResolver(IPackageResolver packageResolver) {
+    public void setPackageResolver(PackageResolver packageResolver) {
         this.packageResolver = packageResolver;
     }
 
     @Override
-    public ITimeoutConfig getTimeoutConfig() {
+    public TimeoutConfig getTimeoutConfig() {
         return timeoutConfig;
     }
 
     @Override
-    public IProxyFactory proxyFactory() {
-        return proxyFactory;
+    public Optional<ProxyFactory> proxyFactory() {
+        return Optional.of (proxyFactory);
     }
 }

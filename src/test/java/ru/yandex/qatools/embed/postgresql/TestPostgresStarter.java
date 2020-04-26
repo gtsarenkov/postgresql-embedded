@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.io.progress.LoggingProgressListener;
 import de.flapdoodle.embed.process.store.NonCachedPostgresArtifactStoreBuilder;
 import org.junit.After;
@@ -27,7 +27,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION;
+import static ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion.Main.PRODUCTION;
 import static ru.yandex.qatools.embed.postgresql.util.SocketUtil.findFreePort;
 
 public class TestPostgresStarter {
@@ -42,7 +42,7 @@ public class TestPostgresStarter {
         logger.setLevel(Level.INFO);
         logger.addHandler(testHandler);
         // turns off the default functionality of unzipping on every run.
-        IRuntimeConfig runtimeConfig = buildRuntimeConfig();
+        RuntimeConfig runtimeConfig = buildRuntimeConfig();
 
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
         final PostgresConfig config = new PostgresConfig(PRODUCTION, new AbstractPostgresConfig.Net(
@@ -68,7 +68,7 @@ public class TestPostgresStarter {
         conn = DriverManager.getConnection(url);
     }
 
-    protected IRuntimeConfig buildRuntimeConfig() {
+    protected RuntimeConfig buildRuntimeConfig() {
         return new RuntimeConfigBuilder()
                 .defaults(Command.Postgres)
                 .artifactStore(new NonCachedPostgresArtifactStoreBuilder()
@@ -76,8 +76,8 @@ public class TestPostgresStarter {
                         .download(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres)
                                 .progressListener(new LoggingProgressListener(logger, Level.ALL))
-                                .build()))
-
+                                .build())
+                        .build())
                 .build();
     }
 

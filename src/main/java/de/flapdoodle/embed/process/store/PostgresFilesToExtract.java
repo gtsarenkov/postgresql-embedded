@@ -4,7 +4,7 @@ import de.flapdoodle.embed.process.config.store.FileSet;
 import de.flapdoodle.embed.process.config.store.FileType;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.*;
-import de.flapdoodle.embed.process.io.directories.IDirectory;
+import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.io.file.Files;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -32,12 +32,12 @@ public class PostgresFilesToExtract extends FilesToExtract {
     private final FileSet    fileSet;
     private final String       extractBasePath;
 
-    public PostgresFilesToExtract(IDirectory dirFactory, ITempNaming executableNaming, FileSet fileSet, Distribution distribution) {
+    public PostgresFilesToExtract(Directory dirFactory, ITempNaming executableNaming, FileSet fileSet, Distribution distribution) {
         super(dirFactory, executableNaming, fileSet);
         this.fileSet = fileSet;
 
         if (dirFactory.asFile() != null) {
-            final File file = new File(dirFactory.asFile(), "pgsql-" + distribution.getVersion().asInDownloadPath());
+            final File file = new File(dirFactory.asFile(), "pgsql-" + distribution.version().asInDownloadPath());
             if (!file.exists()) {
                 //noinspection ResultOfMethodCallIgnored
                 file.mkdir();

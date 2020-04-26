@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
@@ -12,7 +12,7 @@ import java.sql.DriverManager;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION;
+import static ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion.Main.PRODUCTION;
 import static ru.yandex.qatools.embed.postgresql.util.SocketUtil.findFreePort;
 
 /**
@@ -24,13 +24,13 @@ public class PostgresqlService {
     private Connection conn;
 
     public void start() throws Exception {
-        IRuntimeConfig runtimeConfig = new RuntimeConfigBuilder()
+        RuntimeConfig runtimeConfig = new RuntimeConfigBuilder()
                 .defaults(Command.Postgres)
                 .artifactStore(new PostgresArtifactStoreBuilder()
                         .defaults(Command.Postgres)
                         .download(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres).build()
-                        )
+                        ).build()
                 ).build();
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
         final PostgresConfig config = new PostgresConfig(PRODUCTION, new AbstractPostgresConfig.Net("localhost", findFreePort()),

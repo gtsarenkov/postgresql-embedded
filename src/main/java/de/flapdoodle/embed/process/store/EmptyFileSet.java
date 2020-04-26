@@ -1,24 +1,23 @@
 package de.flapdoodle.embed.process.store;
 
-import de.flapdoodle.embed.process.config.store.FileType;
-import de.flapdoodle.embed.process.extract.IExtractedFileSet;
+import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author Ilya Sadykov
  */
-public class EmptyFileSet implements IExtractedFileSet {
+public class EmptyFileSet extends ExtractedFileSet {
     @Override
     public File executable() {
         return null;
     }
 
     @Override
-    public List<File> files(FileType type) {
-        return Collections.emptyList();
+    public Set<File> libraryFiles() {
+      return Collections.emptySet();
     }
 
     @Override

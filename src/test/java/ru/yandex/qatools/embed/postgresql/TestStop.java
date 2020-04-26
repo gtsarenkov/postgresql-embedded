@@ -3,7 +3,7 @@ package ru.yandex.qatools.embed.postgresql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion;
 
 /**
  * @author Ilya Sadykov
@@ -13,7 +13,7 @@ public class TestStop {
 
     public static void main(String[] args) throws Exception {
         LOG.info("Starting postgres");
-        PostgresProcess process = PostgresStarter.getDefaultInstance().prepare(new PostgresConfig(Version.Main.PRODUCTION,
+        PostgresProcess process = PostgresStarter.getDefaultInstance().prepare(new PostgresConfig(PostgreSQLVersion.Main.PRODUCTION,
                 "test-db")).start();
 
         LOG.info("Stopping postgres");
