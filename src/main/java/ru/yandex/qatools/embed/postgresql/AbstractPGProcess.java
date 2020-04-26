@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.runtime.AbstractProcess;
 import de.flapdoodle.embed.process.runtime.Executable;
@@ -15,12 +15,12 @@ import static org.apache.commons.lang3.SystemUtils.JAVA_HOME;
 public abstract class AbstractPGProcess<E extends Executable<PostgresConfig, P>, P extends IStopable>
         extends AbstractProcess<PostgresConfig, E, P> {
 
-    public AbstractPGProcess(Distribution distribution, PostgresConfig config, IRuntimeConfig runtimeConfig, E executable) throws IOException {
+    public AbstractPGProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, E executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
     }
 
     @Override
-    protected void onBeforeProcessStart(ProcessBuilder processBuilder, PostgresConfig config, IRuntimeConfig runtimeConfig) {
+    protected void onBeforeProcessStart(ProcessBuilder processBuilder, PostgresConfig config, RuntimeConfig runtimeConfig) {
         if (config.credentials() != null) {
             processBuilder.environment().put("PGUSER", config.credentials().username());
             processBuilder.environment().put("PGPASSWORD", config.credentials().password());

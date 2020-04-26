@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql.ext;
 
-import de.flapdoodle.embed.process.io.directories.IDirectory;
+import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.io.directories.PropertyOrPlatformTempDir;
 
 import java.io.File;
@@ -30,7 +30,7 @@ public class SubdirTempDir extends PropertyOrPlatformTempDir {
         }
     }
 
-    public static IDirectory defaultInstance() {
+    public static Directory defaultInstance() {
         return _instance;
     }
 

@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql.ext;
 
-import de.flapdoodle.embed.process.io.IStreamProcessor;
+import de.flapdoodle.embed.process.io.StreamProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class LogWatchStreamProcessor extends de.flapdoodle.embed.process.io.LogW
     private volatile boolean found = false;
     private volatile boolean initWithSuccess = false;
 
-    public LogWatchStreamProcessor(String success, Set<String> failures, IStreamProcessor destination) {
+    public LogWatchStreamProcessor(String success, Set<String> failures, StreamProcessor destination) {
         super(success, failures, destination);
         this.success = ofNullable(success).orElse("");
         this.failures = failures;

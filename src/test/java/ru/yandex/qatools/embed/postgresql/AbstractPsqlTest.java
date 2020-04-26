@@ -10,7 +10,7 @@ import java.sql.DriverManager;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION;
+import static ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion.Main.PRODUCTION;
 import static ru.yandex.qatools.embed.postgresql.util.SocketUtil.findFreePort;
 
 /**

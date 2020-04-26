@@ -2,11 +2,8 @@ package ru.yandex.qatools.embed.postgresql.distribution;
 
 /**
  * PostgreSQL Version enum
- *
- * @deprecated since 2.11 SNAPSHOT with migration to 3.0.0 of embedded library in favour of PostgreSQLVersion,
  */
-@Deprecated
-public enum Version implements de.flapdoodle.embed.process.distribution.Version {
+public enum PostgreSQLVersion implements de.flapdoodle.embed.process.distribution.Version {
     /**
      * 11 and 12 for Mac OS X and Windows x86-64 only because EnterpriseDB reduced the
      * <a href="https://www.enterprisedb.com/docs/en/11.0/PG_Inst_Guide_v11/PostgreSQL_Installation_Guide.1.04.html">supported platforms</a>
@@ -25,7 +22,7 @@ public enum Version implements de.flapdoodle.embed.process.distribution.Version 
 
     private final String specificVersion;
 
-    Version (String vName) {
+    PostgreSQLVersion (String vName) {
         this.specificVersion = vName;
     }
 

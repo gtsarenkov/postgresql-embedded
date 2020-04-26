@@ -10,6 +10,14 @@ This library is based on [Flapdoodle OSS's embed process](https://github.com/fla
 Use gradle to make Jar out of this repository. Maven's pom.xml is not updated (at least now).
 Version is extended with snapshot suffix but there is not binary distribution available. To use any project you need to complile it.
 
+This version extends original library to fix some issues when running under Windows environments.
+It uses pg_ctl to start porstgress (in order to be able to start from SYSTEM account, i.e. default when Jenkins is running as a service).
+
+It relays on a fix at embedded process library (see [PR #112](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process/pull/112) ), thus made a separate branch.
+
+### Note
+To compile you need to build embedded process library from [forked Flapdoodle OSS's embed process](https://github.com/gtsarenkov/de.flapdoodle.embed.process.git), but you may also try with original master from [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process).
+
 ## Note: this project is not being actively maintained anymore
 Sorry for any inconvinience, but this project needs active maintainers. If anyone is interested in becoming the maintainer - please let me ([@smecsia](https://github.com/smecsia)) know.
 

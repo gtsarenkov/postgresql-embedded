@@ -4,7 +4,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -67,7 +67,7 @@ public class TestPostgresStoredData {
 
 	@Test
 	public void testStep1() throws Exception {
-		final EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(Version.Main.PRODUCTION, baseDir.getAbsolutePath());
+		final EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(PostgreSQLVersion.Main.PRODUCTION, baseDir.getAbsolutePath());
 		final String           jdbcUrl          = embeddedPostgres.start();
 		try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
 			checkRecords(connection);

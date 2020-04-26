@@ -1,8 +1,8 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
-import de.flapdoodle.embed.process.extract.IExtractedFileSet;
+import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.IOException;
@@ -13,12 +13,12 @@ import java.io.IOException;
  */
 class InitDbExecutable extends AbstractPGExecutable<PostgresConfig, InitDbProcess> {
 
-    public InitDbExecutable(Distribution distribution, PostgresConfig config, IRuntimeConfig runtimeConfig, IExtractedFileSet exe) {
+    public InitDbExecutable(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, ExtractedFileSet exe) {
         super(distribution, config, runtimeConfig, exe);
     }
 
     @Override
-    protected InitDbProcess start(Distribution distribution, PostgresConfig config, IRuntimeConfig runtime)
+    protected InitDbProcess start(Distribution distribution, PostgresConfig config, RuntimeConfig runtime)
             throws IOException {
         return new InitDbProcess<>(distribution, config, runtime, this);
     }

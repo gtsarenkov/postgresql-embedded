@@ -1,10 +1,10 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
-import de.flapdoodle.embed.process.distribution.IVersion;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
+import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.distribution.Platform;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
-import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
+import de.flapdoodle.embed.process.runtime.CommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
@@ -20,7 +20,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION;
+import static ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion.Main.PRODUCTION;
 import static ru.yandex.qatools.embed.postgresql.util.SocketUtil.findFreePort;
 
 /**
@@ -38,7 +38,7 @@ public class EmbeddedPostgres implements AutoCloseable {
             "--lc-ctype=C");
     private static final List<String> DEFAULT_POSTGRES_PARAMS = asList();
     private final String dataDir;
-    private final IVersion version;
+    private final Version version;
     private PostgresProcess process;
     private PostgresConfig config;
 
@@ -46,7 +46,7 @@ public class EmbeddedPostgres implements AutoCloseable {
         this(PRODUCTION);
     }
 
-    public EmbeddedPostgres(IVersion version) {
+    public EmbeddedPostgres(Version version) {
         this(version, null);
     }
 
@@ -54,7 +54,7 @@ public class EmbeddedPostgres implements AutoCloseable {
         this(PRODUCTION, dataDir);
     }
 
-    public EmbeddedPostgres(IVersion version, String dataDir){
+    public EmbeddedPostgres(Version version, String dataDir){
         this.version = version;
         this.dataDir = dataDir;
     }
@@ -64,19 +64,20 @@ public class EmbeddedPostgres implements AutoCloseable {
      *
      * @return runtime configuration required for postgres to start.
      */
-    public static IRuntimeConfig defaultRuntimeConfig() {
+    public static RuntimeConfig defaultRuntimeConfig() {
         return new RuntimeConfigBuilder()
                 .defaults(Command.Postgres)
                 .artifactStore(new PostgresArtifactStoreBuilder()
                         .defaults(Command.Postgres)
                         .download(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres)
-                                .build()))
+                                .build())
+                        .build())
                 .commandLinePostProcessor(privilegedWindowsRunasPostprocessor())
                 .build();
     }
 
-    private static ICommandLinePostProcessor privilegedWindowsRunasPostprocessor() {
+    private static CommandLinePostProcessor privilegedWindowsRunasPostprocessor() {
         if (Platform.detect().equals(Platform.Windows)) {
             try {
                 // Based on https://stackoverflow.com/a/11995662
@@ -91,7 +92,7 @@ public class EmbeddedPostgres implements AutoCloseable {
         return doNothing();
     }
 
-    private static ICommandLinePostProcessor runWithoutPrivileges() {
+    private static CommandLinePostProcessor runWithoutPrivileges() {
         return (distribution, args) -> {
             if (args.size() > 0 && args.get(0).endsWith("postgres.exe")) {
                 return Arrays.asList("runas", "/trustlevel:0x20000", String.format("\"%s\"", String.join(" ", args)));
@@ -100,7 +101,7 @@ public class EmbeddedPostgres implements AutoCloseable {
         };
     }
 
-    private static ICommandLinePostProcessor doNothing() {
+    private static CommandLinePostProcessor doNothing() {
         return (distribution, args) -> args;
     }
 
@@ -111,7 +112,7 @@ public class EmbeddedPostgres implements AutoCloseable {
      * @param cachedPath path where postgres is supposed to be extracted
      * @return runtime configuration required for postgres to start
      */
-    public static IRuntimeConfig cachedRuntimeConfig(Path cachedPath) {
+    public static RuntimeConfig cachedRuntimeConfig(Path cachedPath) {
         final Command cmd = Command.Postgres;
         final FixedPath cachedDir = new FixedPath(cachedPath.toString());
         return new RuntimeConfigBuilder()
@@ -122,7 +123,8 @@ public class EmbeddedPostgres implements AutoCloseable {
                         .download(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(cmd)
                                 .packageResolver(new PackagePaths(cmd, cachedDir))
-                                .build()))
+                                .build())
+                        .build())
                 .commandLinePostProcessor(privilegedWindowsRunasPostprocessor())
                 .build();
     }
@@ -143,7 +145,7 @@ public class EmbeddedPostgres implements AutoCloseable {
         return start(defaultRuntimeConfig(), host, port, dbName, user, password, additionalParams);
     }
 
-    public String start(IRuntimeConfig runtimeConfig) throws IOException {
+    public String start(RuntimeConfig runtimeConfig) throws IOException {
         return start(runtimeConfig, DEFAULT_HOST, findFreePort(), DEFAULT_DB_NAME, DEFAULT_USER, DEFAULT_PASSWORD, DEFAULT_ADD_PARAMS);
     }
 
@@ -160,11 +162,11 @@ public class EmbeddedPostgres implements AutoCloseable {
      * @return connection url for the initialized postgres instance
      * @throws IOException if an I/O error occurs during the process startup
      */
-    public String start(IRuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
+    public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
                         List<String> additionalParams) throws IOException {
         return start(runtimeConfig, host, port, dbName, user, password, additionalParams, DEFAULT_POSTGRES_PARAMS);
     }
-    
+
     /**
      * Starts up the embedded postgres
      *
@@ -179,7 +181,7 @@ public class EmbeddedPostgres implements AutoCloseable {
      * @return connection url for the initialized postgres instance
      * @throws IOException if an I/O error occurs during the process startup
      */
-    public String start(IRuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
+    public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
                         List<String> additionalInitDbParams, List<String> additionalPostgresParams) throws IOException {
         final PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
         config = new PostgresConfig(version,

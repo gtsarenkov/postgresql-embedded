@@ -1,9 +1,13 @@
 package ru.yandex.qatools.embed.postgresql.config;
 
-import de.flapdoodle.embed.process.config.ISupportConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.Command;
 
-public class SupportConfig implements ISupportConfig {
+import java.util.function.BiFunction;
+
+public class SupportConfig implements de.flapdoodle.embed.process.config.SupportConfig {
+    private static final Logger logger = LoggerFactory.getLogger (SupportConfig.class);
     private final Command command;
 
     public SupportConfig(Command command) {
@@ -11,22 +15,27 @@ public class SupportConfig implements ISupportConfig {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return command.commandName();
     }
 
     @Override
-    public String getSupportUrl() {
+    public String supportUrl() {
         return "https://github.com/yandex-qatools/postgresql-embedded/issues\n";
     }
 
     @Override
-    public String messageOnException(Class<?> context, Exception exception) {
-        return null;
+    public BiFunction<Class<?>, Exception, String> messageOnException() {
+        return SupportConfig::messageOnException;
     }
 
     @Override
     public long maxStopTimeoutMillis() {
         return 100;
+    }
+
+    private static String messageOnException(final Class<?> context, final Exception exception) {
+      logger.warn("Some issues on {} with exception", context, exception);
+      return null;
     }
 }

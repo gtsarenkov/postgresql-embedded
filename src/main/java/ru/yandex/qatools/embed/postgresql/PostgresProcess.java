@@ -1,13 +1,13 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
-import de.flapdoodle.embed.process.config.store.IDownloadConfig;
+import de.flapdoodle.embed.process.config.store.DownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
-import de.flapdoodle.embed.process.extract.IExtractedFileSet;
+import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
-import de.flapdoodle.embed.process.io.directories.IDirectory;
+import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Executable;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
@@ -57,35 +57,35 @@ import static ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig.S
 public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, PostgresProcess> {
     private static final int MAX_CREATEDB_TRIALS = 3;
     private static final int DEFAULT_CMD_TIMEOUT = 2000;
-    private static Logger LOGGER = getLogger(PostgresProcess.class);
-    private final IRuntimeConfig runtimeConfig;
+    private static final Logger LOGGER = getLogger(PostgresProcess.class);
+    private final RuntimeConfig runtimeConfig;
 
     private volatile boolean processReady = false;
     private volatile boolean stopped = false;
 
     public PostgresProcess(Distribution distribution, PostgresConfig config,
-                           IRuntimeConfig runtimeConfig, PostgresExecutable executable) throws IOException {
+                           RuntimeConfig runtimeConfig, PostgresExecutable executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
         this.runtimeConfig = runtimeConfig;
     }
 
-    private static String runCmd(PostgresConfig config, IRuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
+    private static String runCmd(PostgresConfig config, RuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
                                  Set<String> failOutput, String... args) {
         return runCmd(false, config, parentRuntimeCfg, cmd, successOutput, failOutput, args);
     }
 
     private static String runCmd(boolean silent,
-                                 PostgresConfig config, IRuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
+                                 PostgresConfig config, RuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
                                  Set<String> failOutput, String... args) {
         try {
             final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput,
                     failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
 
             IArtifactStore artifactStore = parentRuntimeCfg.getArtifactStore();
-            IDownloadConfig downloadCfg = ((PostgresArtifactStore) artifactStore).getDownloadConfig();
+            DownloadConfig downloadCfg = ((PostgresArtifactStore) artifactStore).getDownloadConfig();
 
             if (downloadCfg instanceof IMutableDownloadConfig) {
-                IDirectory tempDir = SubdirTempDir.defaultInstance();
+                Directory tempDir = SubdirTempDir.defaultInstance();
                 if (downloadCfg.getPackageResolver() instanceof PackagePaths) {
                     tempDir = ((PackagePaths) downloadCfg.getPackageResolver()).getTempDir();
                 }
@@ -104,8 +104,8 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 artifactStore = new PostgresArtifactStoreBuilder().defaults(cmd).download(downloadCfg).build();
             }
 
-            final IRuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
-                    .daemonProcess(false)
+            final RuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
+                    .isDaemonProcess (false)
                     .processOutput(new ProcessOutput(logWatch, logWatch, logWatch))
                     .artifactStore(artifactStore)
                     .commandLinePostProcessor(parentRuntimeCfg.getCommandLinePostProcessor()).build();
@@ -131,7 +131,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         return null;
     }
 
-    private static boolean shutdownPostgres(PostgresConfig config, IRuntimeConfig runtimeConfig) {
+    private static boolean shutdownPostgres(PostgresConfig config, RuntimeConfig runtimeConfig) {
         try {
             return isEmpty(runCmd(true, config, runtimeConfig, Command.PgCtl, "server stopped", emptySet(), "stop"));
         } catch (Exception e) {
@@ -173,7 +173,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
     protected final boolean sendStopToPostgresqlInstance() {
         final boolean result = shutdownPostgres(getConfig(), runtimeConfig);
         if (runtimeConfig.getArtifactStore() instanceof PostgresArtifactStore) {
-            final IDirectory tempDir = ((PostgresArtifactStore) runtimeConfig.getArtifactStore()).getTempDir();
+            final Directory tempDir = ((PostgresArtifactStore) runtimeConfig.getArtifactStore()).getTempDir();
             if (tempDir != null && tempDir.asFile() != null && tempDir.isGenerated()) {
                 LOGGER.info("Cleaning up after the embedded process (removing {})...", tempDir.asFile().getAbsolutePath());
                 forceDelete(tempDir.asFile());
@@ -183,8 +183,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
     }
 
     @Override
-    protected void onBeforeProcess(IRuntimeConfig runtimeConfig)
-            throws IOException {
+    protected void onBeforeProcess(RuntimeConfig runtimeConfig) {
         super.onBeforeProcess(runtimeConfig);
         PostgresConfig config = getConfig();
 
@@ -197,10 +196,9 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
     }
 
     @Override
-    protected List<String> getCommandLine(Distribution distribution, PostgresConfig config, IExtractedFileSet exe)
-            throws IOException {
+    protected List<String> getCommandLine(Distribution distribution, PostgresConfig config, ExtractedFileSet exe) {
         List<String> ret = new ArrayList<>();
-        switch (config.supportConfig().getName()) {
+        switch (config.supportConfig().name()) {
             case "postgres": //NOSONAR
                 ret.addAll(asList(exe.executable().getAbsolutePath(),
                         "-p", String.valueOf(config.net().port()),
@@ -220,7 +218,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 break;
             default:
                 throw new RuntimeException("Failed to launch Postgres: Unknown command " +
-                        config.supportConfig().getName() + "!");
+                        config.supportConfig().name() + "!");
         }
         return ret;
     }
@@ -241,7 +239,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
 
     @Override
     protected final void onAfterProcessStart(ProcessControl process,
-                                             IRuntimeConfig runtimeConfig) throws IOException {
+                                             RuntimeConfig runtimeConfig) {
         final Storage storage     = getConfig().storage();
         final Path    pidFilePath = Paths.get(storage.dbDir().getAbsolutePath(), "postmaster.pid");
         final File    pidFile     = new File(pidFilePath.toAbsolutePath().toString());
@@ -261,7 +259,12 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
             setProcessId(pid);
         } else {
             // fallback, try to read pid file. will throw IOException if that fails
+          try {
             setProcessId(getPidFromFile(pidFile()));
+          }
+          catch (IOException e) {
+            throw new IllegalStateException (String.format("Unable to determine pid from %s", pidFile()), e);
+          }
         }
 
         int trial = 0;

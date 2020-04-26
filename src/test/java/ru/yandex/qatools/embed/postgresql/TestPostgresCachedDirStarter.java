@@ -1,6 +1,6 @@
 package ru.yandex.qatools.embed.postgresql;
 
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
@@ -13,7 +13,7 @@ import static org.apache.commons.io.FileUtils.getTempDirectory;
 public class TestPostgresCachedDirStarter extends TestPostgresStarter {
 
     @Override
-    protected IRuntimeConfig buildRuntimeConfig() {
+    protected RuntimeConfig buildRuntimeConfig() {
         // turns off the default functionality of unzipping on every run.
         final String tmpDir = new File(getTempDirectory(), "pgembed").getPath();
         final Command cmd = Command.Postgres;
@@ -26,7 +26,8 @@ public class TestPostgresCachedDirStarter extends TestPostgresStarter {
                         .download(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(cmd)
                                 .packageResolver(new PackagePaths(cmd, cachedDir))
-                                .build()))
+                                .build())
+                        .build())
                 .build();
     }
 }
