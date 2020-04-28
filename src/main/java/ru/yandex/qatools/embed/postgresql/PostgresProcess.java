@@ -142,13 +142,24 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
 
     @Override
     protected synchronized void stopInternal() {
-        if (!stopped && isProcessRunning()) {
-            stopped = true;
-            LOGGER.info("trying to stop postgresql");
-            if (!sendStopToPostgresqlInstance() && !sendTermToProcess() && waitUntilProcessHasStopped(2000)) {
-                LOGGER.warn("could not stop postgresql with pg_ctl/SIGTERM, trying to kill it...");
-                if (!sendKillToProcess() && !tryKillToProcess() && waitUntilProcessHasStopped(3000)) {
-                    LOGGER.warn("could not kill postgresql within 4s!");
+        if (!stopped) {
+            try {
+              stopped = !isProcessRunning();
+            }
+            catch (NullPointerException ignored) {
+            }
+            catch (Throwable e) {
+              LOGGER.error("Cannot stop postgres", e);
+              throw e;
+            }
+            if (!stopped) {
+                stopped = false;
+                LOGGER.info("trying to stop postgresql");
+                if (!sendStopToPostgresqlInstance() && !sendTermToProcess() && waitUntilProcessHasStopped(2000)) {
+                    LOGGER.warn("could not stop postgresql with pg_ctl/SIGTERM, trying to kill it...");
+                    if (!sendKillToProcess() && !tryKillToProcess() && waitUntilProcessHasStopped(3000)) {
+                        LOGGER.warn("could not kill postgresql within 4s!");
+                    }
                 }
             }
         }
@@ -188,7 +199,8 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         PostgresConfig config = getConfig();
 
         final File     dbDir   = config.storage().dbDir();
-        if (dbDir.exists() && dbDir.listFiles() != null && dbDir.listFiles().length > 0) {
+        final File[] dbFiles = dbDir.listFiles();
+        if (dbDir.exists() && dbFiles != null && dbFiles.length > 0) {
             return;
         }
 

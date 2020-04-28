@@ -63,12 +63,30 @@ dependencies {
   testImplementation "org.slf4j:jul-to-slf4j:${slf4jVersion}"
 }
 
+java {
+  withSourcesJar()
+}
+
 test {
   useJUnitPlatform ()
   ignoreFailures = true
   reports {
     html.enabled = true
   }
+}
+
+javadoc {
+  failOnError = false
+  options.addStringOption('Xdoclint:none')
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives javadocJar
 }
 
 jar {
