@@ -4,7 +4,7 @@
 [![Windows build status](https://ci.appveyor.com/api/projects/status/00ov87k6fe2euwvo?svg=true)](https://ci.appveyor.com/project/smecsia/postgresql-embedded)
 
 Embedded PostgreSQL server provides a platform neutral way for running postgres binaries in unittests.
-This library is based on [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process). 
+This library is based on [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process).
 
 ## Gradle build
 Use gradle to make Jar out of this repository. Maven's pom.xml is not updated (at least now).
@@ -13,10 +13,14 @@ Version is extended with snapshot suffix but there is not binary distribution av
 This version extends original library to fix some issues when running under Windows environments.
 It uses pg_ctl to start porstgress (in order to be able to start from SYSTEM account, i.e. default when Jenkins is running as a service).
 
-It relays on a fix at embedded process library (see [PR #112](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process/pull/112) ), thus made a separate branch.
+### Special handling of quoutes under Windows
+There is JDK-8221858 (not public) which changes command line beahviour under Windows if Security managerer is available.
+To make story short you need to add -Djdk.lang.Process.allowAmbiguousCommands=false if you need to use double quotes in additional paramters.
+
+Original [Release Notes](https://www.oracle.com/technetwork/java/javase/11-0-5-oracle-relnotes-5592801.html) for JDK 11.0.5.
 
 ### Note
-To compile you need to build embedded process library from [forked Flapdoodle OSS's embed process](https://github.com/gtsarenkov/de.flapdoodle.embed.process.git), but you may also try with original master from [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process).
+To compile you need to build embedded process library from master of [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process) (i.e. version 3.0.0-SNAPSHOT is required).
 
 ## Note: this project is not being actively maintained anymore
 Sorry for any inconvinience, but this project needs active maintainers. If anyone is interested in becoming the maintainer - please let me ([@smecsia](https://github.com/smecsia)) know.
@@ -81,8 +85,8 @@ conn.close();
 postgres.stop();
 ```
 
-Note that EmbeddedPostgres implements [java.lang.AutoCloseable](https://docs.oracle.com/javase/7/docs/api/java/lang/AutoCloseable.html), 
-which means that you can use it with a [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html) 
+Note that EmbeddedPostgres implements [java.lang.AutoCloseable](https://docs.oracle.com/javase/7/docs/api/java/lang/AutoCloseable.html),
+which means that you can use it with a [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
 statement (in Java >= 7) to have it automatically stopped.
 
 ### How to avoid archive extraction on every run
@@ -123,18 +127,18 @@ final EmbeddedPostgres postgres = new EmbeddedPostgres(() -> (IS_OS_WINDOWS) ? "
 
 ### Known issues
 * A lot of issues have been reported for this library under Windows. Please try to use the suggested way of start up and use
-the cached artifact storage (to avoid extraction of the archive as extraction is extremely slow under Windows): 
+the cached artifact storage (to avoid extraction of the archive as extraction is extremely slow under Windows):
 ```java
 postgres.start(cachedRuntimeConfig("C:\\Users\\vasya\\pgembedded-installation"));
 ```
 
-* PostgreSQL server is known to not start under the privileged user (which means you cannot start it under root/Administrator of your system):  
+* PostgreSQL server is known to not start under the privileged user (which means you cannot start it under root/Administrator of your system):
 
-> `initdb must be run as the user that will own the server process, because the server needs to have access to the files and directories that initdb creates. Since the server cannot be run as root, you must not run initdb as root either. (It will in fact refuse to do so.)` 
-  ([link](http://www.postgresql.org/docs/9.5/static/app-initdb.html)).   
-  
-  However some users have launched it successfully on Windows under Administrator, so you can try anyway. 
-  
+> `initdb must be run as the user that will own the server process, because the server needs to have access to the files and directories that initdb creates. Since the server cannot be run as root, you must not run initdb as root either. (It will in fact refuse to do so.)`
+  ([link](http://www.postgresql.org/docs/9.5/static/app-initdb.html)).
+
+  However some users have launched it successfully on Windows under Administrator, so you can try anyway.
+
 ### Supported Versions
 
 * 12.2, 11.7: on Mac OS X and Windows 64 bit
