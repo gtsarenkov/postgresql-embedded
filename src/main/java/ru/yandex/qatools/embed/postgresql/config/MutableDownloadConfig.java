@@ -84,6 +84,6 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
 
     @Override
     public Optional<ProxyFactory> proxyFactory() {
-        return Optional.of (proxyFactory);
+        return Optional.ofNullable (proxyFactory);
     }
 }
