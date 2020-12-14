@@ -6,15 +6,20 @@
 Embedded PostgreSQL server provides a platform neutral way for running postgres binaries in unittests.
 This library is based on [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process).
 
+## Motivation of the fork
+This fork has been created to adopt project under Windows environment and keep it more or less use of latest [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process). Version 3.0.1 is used as of 14.29.2020.
+
+The refactorings of the library was not backwards compatible, thus breaking changes introduced in this project as well.
+
 ## Gradle build
 Use gradle to make Jar out of this repository. Maven's pom.xml is not updated (at least now).
-Version is extended with snapshot suffix but there is not binary distribution available. To use any project you need to complile it.
+Version is extended with snapshot suffix but there is not binary distribution available. To use any project you need to compile it.
 
 This version extends original library to fix some issues when running under Windows environments.
-It uses pg_ctl to start porstgress (in order to be able to start from SYSTEM account, i.e. default when Jenkins is running as a service).
+It uses pg_ctl to start postgres (in order to be able to start from SYSTEM account, i.e. default when Jenkins is running as a service).
 
-### Special handling of quoutes under Windows
-There is JDK-8221858 (not public) which changes command line beahviour under Windows if Security managerer is available.
+### Special handling of quotes under Windows
+There is JDK-8221858 (not public) which changes command line beahviour under Windows if Security manager is available.
 To make story short you need to add -Djdk.lang.Process.allowAmbiguousCommands=false if you need to use double quotes in additional paramters.
 
 Original [Release Notes](https://www.oracle.com/technetwork/java/javase/11-0-5-oracle-relnotes-5592801.html) for JDK 11.0.5.
