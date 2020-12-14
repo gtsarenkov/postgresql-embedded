@@ -19,19 +19,16 @@ This version extends original library to fix some issues when running under Wind
 It uses pg_ctl to start postgres (in order to be able to start from SYSTEM account, i.e. default when Jenkins is running as a service).
 
 ### Special handling of quotes under Windows
-There is JDK-8221858 (not public) which changes command line beahviour under Windows if Security manager is available.
-To make story short you need to add -Djdk.lang.Process.allowAmbiguousCommands=false if you need to use double quotes in additional paramters.
+There is JDK-8221858 (not public) which changes command line behaviour under Windows if Security manager is available.
+To make story short you need to add -Djdk.lang.Process.allowAmbiguousCommands=false if you need to use double quotes in additional parameters.
 
 Original [Release Notes](https://www.oracle.com/technetwork/java/javase/11-0-5-oracle-relnotes-5592801.html) for JDK 11.0.5.
-
-### Note
-To compile you need to build embedded process library from master of [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process) (i.e. version 3.0.0-SNAPSHOT is required).
 
 ## Note: this project is not being actively maintained anymore
 Sorry for any inconvinience, but this project needs active maintainers. If anyone is interested in becoming the maintainer - please let me ([@smecsia](https://github.com/smecsia)) know.
 
 ## Officially recommended alternative
-Please be adviced that the main maintainer of this project has successfuly migrated to the use of [Test Containers project](https://www.testcontainers.org/modules/databases/postgres/). This is the best possible alternative nowadays.
+Please be advised that the main maintainer of this project has successfully migrated to the use of [Test Containers project](https://www.testcontainers.org/modules/databases/postgres/). This is the best possible alternative nowadays.
 
 ## Motivation
 
