@@ -8,13 +8,14 @@ import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.Extractors;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.extract.Extractor;
-import de.flapdoodle.embed.process.extract.ITempNaming;
+import de.flapdoodle.embed.process.extract.TempNaming;
 import de.flapdoodle.embed.process.io.directories.Directory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 
@@ -22,22 +23,18 @@ import static org.apache.commons.io.FileUtils.deleteQuietly;
  * @author Ilya Sadykov
  * Hacky ArtifactStore. Just to override the default FilesToExtract with PostgresFilesToExtract
  */
-public class PostgresArtifactStore implements IMutableArtifactStore {
+public class PostgresArtifactStore extends ArtifactStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresArtifactStore.class);
     private DownloadConfig downloadConfig;
     private final Directory tempDirFactory;
-    private final ITempNaming executableNaming;
-    private final IDownloader downloader;
+    private final TempNaming executableNaming;
+    private final Downloader downloader;
 
-    PostgresArtifactStore(DownloadConfig downloadConfig, Directory tempDirFactory, ITempNaming executableNaming, IDownloader downloader) {
+    PostgresArtifactStore(DownloadConfig downloadConfig, Directory tempDirFactory, TempNaming executableNaming, Downloader downloader) {
         this.downloadConfig = downloadConfig;
         this.tempDirFactory = tempDirFactory;
         this.executableNaming = executableNaming;
         this.downloader = downloader;
-    }
-
-    public Directory getTempDir() {
-        return tempDirFactory;
     }
 
     @Override
@@ -57,35 +54,38 @@ public class PostgresArtifactStore implements IMutableArtifactStore {
     }
 
     @Override
-    public boolean checkDistribution(Distribution distribution) throws IOException {
-        if (!LocalArtifactStore.checkArtifact(downloadConfig, distribution)) {
-            return LocalArtifactStore.store(downloadConfig, distribution, downloader.download(downloadConfig, distribution));
-        }
-        return true;
-    }
-
-    public DownloadConfig getDownloadConfig() {
+    public DownloadConfig downloadConfig() {
         return downloadConfig;
     }
 
     @Override
-    public void setDownloadConfig(DownloadConfig downloadConfig) {
-        this.downloadConfig = downloadConfig;
+    public Directory tempDirFactory() {
+        return tempDirFactory;
     }
 
     @Override
-    public ExtractedFileSet extractFileSet(Distribution distribution) throws IOException {
+    TempNaming executableNaming() {
+        return executableNaming;
+    }
+
+    @Override
+    Downloader downloader() {
+        return downloader;
+    }
+
+    @Override
+    public Optional<ExtractedFileSet> extractFileSet(Distribution distribution) throws IOException {
         PackageResolver packageResolver = downloadConfig.getPackageResolver();
         File artifact = getArtifact(downloadConfig, distribution);
         final ArchiveType archiveType = packageResolver.packageFor(distribution).archiveType();
         Extractor extractor = Extractors.getExtractor(archiveType);
         try {
             final FileSet fileSet = packageResolver.packageFor(distribution).fileSet();
-            return extractor.extract(downloadConfig, artifact,
-                    new PostgresFilesToExtract(tempDirFactory, executableNaming, fileSet, distribution));
+            return Optional.of(extractor.extract(downloadConfig, artifact,
+                    new PostgresFilesToExtract(tempDirFactory, executableNaming, fileSet, distribution)));
         } catch (Exception e) {
             LOGGER.error("Failed to extract file set:", e);
-            return new EmptyFileSet ();
+            return Optional.empty();
         }
     }
 

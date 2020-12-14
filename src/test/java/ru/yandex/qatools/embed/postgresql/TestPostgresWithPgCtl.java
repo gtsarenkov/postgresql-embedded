@@ -30,10 +30,12 @@ public class TestPostgresWithPgCtl {
     public void setUp() throws Exception {
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(
                 new RuntimeConfigBuilder().defaults(Command.PgCtl).build());
-        final PostgresConfig config = new PostgresConfig(PostgreSQLVersion.Main.PRODUCTION, new AbstractPostgresConfig.Net(
-                "localhost", findFreePort()
-        ), new AbstractPostgresConfig.Storage("test"), new AbstractPostgresConfig.Timeout(),
-                new AbstractPostgresConfig.Credentials("user", "password"), Command.PgCtl);
+        final PostgresConfig config = new PostgresConfig(PostgreSQLVersion.Main.PRODUCTION,
+            new AbstractPostgresConfig.Net("localhost", findFreePort()),
+            new AbstractPostgresConfig.Storage("test"),
+            new AbstractPostgresConfig.Timeout(),
+            new AbstractPostgresConfig.Credentials("user", "password"), Command.PgCtl,
+            AbstractPostgresConfig.DEFAULT_STOP_TIMEOUT);
         config.getAdditionalInitDbParams().addAll(asList(
                 "-E", "SQL_ASCII",
                 "--locale=C",

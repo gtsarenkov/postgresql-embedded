@@ -45,7 +45,7 @@ public class PostgresStarter<E extends AbstractPGExecutable<PostgresConfig, P>, 
         LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(
                 "started", new HashSet<>(singletonList("failed")),
                 new Slf4jStreamProcessor(getLogger("postgres"), Slf4jLevel.TRACE));
-        return new RuntimeConfigBuilder()
+        return new RuntimeConfigBuilder ()
                 .defaults(cmd)
                 .processOutput(new ProcessOutput(logWatch, logWatch, logWatch)).build();
     }

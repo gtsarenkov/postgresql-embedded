@@ -1,6 +1,7 @@
 package ru.yandex.qatools.embed.postgresql.config;
 
 import de.flapdoodle.embed.process.config.ExecutableProcessConfig;
+import de.flapdoodle.embed.process.config.SupportConfig;
 import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.io.file.Files;
 import ru.yandex.qatools.embed.postgresql.Command;
@@ -10,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.OptionalLong;
 
 import static de.flapdoodle.embed.process.runtime.Network.getFreeServerPort;
 import static de.flapdoodle.embed.process.runtime.Network.getLocalHost;
@@ -19,34 +22,41 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 /**
  * Common postgres config
  */
-public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig> extends ExecutableProcessConfig {
+public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig<?>> implements ExecutableProcessConfig {
 
+    public static final long DEFAULT_STOP_TIMEOUT = -1L;
     private final Storage storage;
     protected final Net network;
     protected final Timeout timeout;
     protected final Credentials credentials;
-    protected List<String> args = new ArrayList<>();
-    protected List<String> additionalInitDbParams = new ArrayList<>();
-    protected List<String> additionalPostgresParams = new ArrayList<>();
+    private final Version version;
+    private final PostgresSupportConfig postgresSupportConfig;
+    private final Long stopTimeoutInMillis;
+    protected final List<String> args = new ArrayList<>();
+    protected final List<String> additionalInitDbParams = new ArrayList<>();
+    protected final List<String> additionalPostgresParams = new ArrayList<>();
 
-    protected AbstractPostgresConfig(AbstractPostgresConfig config, Command postgres) {
-        this(config.version, config.net(), config.storage, config.timeout(), config.credentials, new SupportConfig(postgres));
+    protected AbstractPostgresConfig(AbstractPostgresConfig<C> config, Command postgres) {
+        // TODO: review default value for timeout -1 or 0 and use INDEFINITE.
+        this(config.version(), config.net(), config.storage(), config.timeout(), config.credentials, new PostgresSupportConfig (postgres), config.stopTimeoutInMillis ().orElse (DEFAULT_STOP_TIMEOUT));
     }
 
-    protected AbstractPostgresConfig(AbstractPostgresConfig config) {
+    protected AbstractPostgresConfig(AbstractPostgresConfig<C> config) {
         this(config, Command.Postgres);
     }
 
-    public AbstractPostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, SupportConfig supportConfig) {
-        super(version, supportConfig);
+    public AbstractPostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, PostgresSupportConfig postgresSupportConfig, Long stopTimeoutInMillis) {
+        this.version = version;
+        this.postgresSupportConfig = postgresSupportConfig;
         this.network = network;
         this.timeout = timeout;
+        this.stopTimeoutInMillis = stopTimeoutInMillis;
         this.storage = storage;
         this.credentials = cred;
     }
 
     public AbstractPostgresConfig(Version version, Net network, Storage storage, Timeout timeout) {
-        this(version, network, storage, timeout, null, new SupportConfig(Command.Postgres));
+        this(version, network, storage, timeout, null, new PostgresSupportConfig (Command.Postgres), DEFAULT_STOP_TIMEOUT);
     }
 
     public Net net() {
@@ -69,13 +79,31 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig> e
         return args;
     }
 
+  /**
+   * Adds arguments to the list.
+   *
+   * @implNote need to review unchecked typecast
+   * @param args arguments
+   * @return C
+   */
+    @SuppressWarnings ("unchecked")
     public C withArgs(String... args) {
         args().addAll(asList(args));
+        // TODO: refactor
         return (C) this;
     }
 
+  /**
+   * Adds additional arguments for InitDb.
+   *
+   * @implNote needed to review unchecked typecast.
+   * @param additionalInitDbParams additional parameters
+   * @return C
+   */
+    @SuppressWarnings ("unchecked")
     public C withAdditionalInitDbParams(List<String> additionalInitDbParams) {
         this.additionalInitDbParams.addAll(additionalInitDbParams);
+        // TODO: refactor
         return (C) this;
     }
 
@@ -118,6 +146,21 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig> e
     public List<String> getAdditionalPostgresParams() {
         return additionalPostgresParams;
     }
+
+    @Override
+    public Version version () {
+        return version;
+      }
+
+    @Override
+    public SupportConfig supportConfig () {
+        return postgresSupportConfig;
+      }
+
+    @Override
+    public OptionalLong stopTimeoutInMillis () {
+        return Objects.isNull(stopTimeoutInMillis)?OptionalLong.empty():OptionalLong.of(stopTimeoutInMillis);
+      }
 
     public static class Storage {
         private final File dbDir;

@@ -23,10 +23,13 @@ public abstract class AbstractPsqlTest {
     @Before
     public void setUp() throws Exception {
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getDefaultInstance();
-        final PostgresConfig config = new PostgresConfig(PRODUCTION, new AbstractPostgresConfig.Net(
-                "localhost", findFreePort()
-        ), new AbstractPostgresConfig.Storage("test"), new AbstractPostgresConfig.Timeout(),
-                new AbstractPostgresConfig.Credentials("user", "password"));
+        final PostgresConfig config = new PostgresConfig(PRODUCTION,
+            new AbstractPostgresConfig.Net("localhost", findFreePort()),
+            new AbstractPostgresConfig.Storage("test"),
+            new AbstractPostgresConfig.Timeout(),
+            new AbstractPostgresConfig.Credentials("user", "password"),
+            AbstractPostgresConfig.DEFAULT_STOP_TIMEOUT
+            );
         config.getAdditionalInitDbParams().addAll(asList(
                 "-E", "SQL_ASCII",
                 "--locale=C",

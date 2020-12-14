@@ -3,6 +3,7 @@ package ru.yandex.qatools.embed.postgresql;
 import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.config.store.DownloadConfig;
+import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
@@ -11,15 +12,10 @@ import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Executable;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
-import de.flapdoodle.embed.process.store.IArtifactStore;
-import de.flapdoodle.embed.process.store.IMutableArtifactStore;
-import de.flapdoodle.embed.process.store.PostgresArtifactStore;
-import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
+import de.flapdoodle.embed.process.store.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
-import ru.yandex.qatools.embed.postgresql.config.IMutableDownloadConfig;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
-import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
 import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
 import ru.yandex.qatools.embed.postgresql.ext.LogWatchStreamProcessor;
 import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
@@ -81,34 +77,24 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
             final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput,
                     failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
 
-            IArtifactStore artifactStore = parentRuntimeCfg.getArtifactStore();
-            DownloadConfig downloadCfg = ((PostgresArtifactStore) artifactStore).getDownloadConfig();
+            final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore ();
+            final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder ().from(artifactStore));
 
-            if (downloadCfg instanceof IMutableDownloadConfig) {
-                Directory tempDir = SubdirTempDir.defaultInstance();
-                if (downloadCfg.getPackageResolver() instanceof PackagePaths) {
-                    tempDir = ((PackagePaths) downloadCfg.getPackageResolver()).getTempDir();
-                }
-                ((IMutableDownloadConfig) downloadCfg).setPackageResolver(new PackagePaths(cmd, tempDir));
-            } else {
-                LOGGER.warn("Could not use the configured download configuration for '" + cmd.commandName() +
-                        "', falling back to default!");
-                downloadCfg = new PostgresDownloadConfigBuilder().defaultsForCommand(cmd)
-                        .progressListener(new Slf4jProgressListener(LOGGER)).build();
+            DownloadConfig downloadCfg = artifactStore.downloadConfig();
+            final ImmutableDownloadConfig.Builder builderDownloadConfig = ImmutableDownloadConfig.builder().from(downloadCfg);
+
+            Directory tempDir = SubdirTempDir.defaultInstance();
+            if (downloadCfg.getPackageResolver() instanceof PackagePaths) {
+                tempDir = ((PackagePaths) downloadCfg.getPackageResolver()).getTempDir();
             }
-            if (artifactStore instanceof IMutableArtifactStore) {
-                ((IMutableArtifactStore) artifactStore).setDownloadConfig(downloadCfg);
-            } else {
-                LOGGER.warn("Could not use the configured artifact store for '" + cmd.commandName() +
-                        "', falling back to default!");
-                artifactStore = new PostgresArtifactStoreBuilder().defaults(cmd).download(downloadCfg).build();
-            }
+            builderDownloadConfig.packageResolver(new PackagePaths(cmd, tempDir));
+            final ArtifactStore newArtifactoryStore = artifactStoreBuilder.build (builder -> builder.downloadConfig (builderDownloadConfig.build ()).build ());
 
             final RuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
-                    .isDaemonProcess (false)
+                    .isDaemonProcess(false)
                     .processOutput(new ProcessOutput(logWatch, logWatch, logWatch))
-                    .artifactStore(artifactStore)
-                    .commandLinePostProcessor(parentRuntimeCfg.getCommandLinePostProcessor()).build();
+                    .artifactStore(newArtifactoryStore)
+                    .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor()).build();
 
             final PostgresConfig postgresConfig = new PostgresConfig(config).withArgs(args);
             if (Command.InitDb == cmd) {
@@ -169,11 +155,12 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         deleteTempFiles();
     }
 
+    //TODO: investigate use of stop timeout.
     private boolean waitUntilProcessHasStopped(int timeoutMillis) {
         long started = currentTimeMillis();
         while (currentTimeMillis() - started < timeoutMillis && isProcessRunning()) {
             try {
-                sleep(50);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 LOGGER.warn("Failed to wait with timeout until the process has been killed", e);
             }
@@ -183,8 +170,8 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
 
     protected final boolean sendStopToPostgresqlInstance() {
         final boolean result = shutdownPostgres(getConfig(), runtimeConfig);
-        if (runtimeConfig.getArtifactStore() instanceof PostgresArtifactStore) {
-            final Directory tempDir = ((PostgresArtifactStore) runtimeConfig.getArtifactStore()).getTempDir();
+        if (runtimeConfig.artifactStore() instanceof PostgresArtifactStore) {
+            final Directory tempDir = ((PostgresArtifactStore) runtimeConfig.artifactStore()).tempDirFactory();
             if (tempDir != null && tempDir.asFile() != null && tempDir.isGenerated()) {
                 LOGGER.info("Cleaning up after the embedded process (removing {})...", tempDir.asFile().getAbsolutePath());
                 forceDelete(tempDir.asFile());
@@ -258,7 +245,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         int           timeout     = TIMEOUT;
         while (!pidFile.exists() && ((timeout = timeout - 100) > 0)) {
             try {
-                sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ie) { /* safe to ignore */ }
         }
         int pid = -1;
@@ -310,7 +297,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
     /**
      * Import into database from file with additional args
      *
-     * @param file
+     * @param file    file to import
      * @param cliArgs additional arguments for psql (be sure to separate args from their values)
      */
     public void importFromFileWithArgs(File file, String... cliArgs) {
@@ -331,7 +318,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
     /**
      * Import into database from file with additional args
      *
-     * @param file
+     * @param file    file to restore
      * @param cliArgs additional arguments for psql (be sure to separate args from their values)
      */
     public void restoreFromFile(File file, String... cliArgs) {

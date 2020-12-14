@@ -8,11 +8,18 @@ import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
 import java.util.function.Function;
 
 public class PostgresArtifactStoreBuilder {
-    private ImmutableArtifactStore.Builder builder;
+    private final ImmutableArtifactStore.Builder builder;
+
+    public PostgresArtifactStoreBuilder() {
+        this(ImmutableArtifactStore.builder());
+    }
+
+    public PostgresArtifactStoreBuilder (final ImmutableArtifactStore.Builder builder) {
+        this.builder = builder;
+    }
 
     public PostgresArtifactStoreBuilder defaults(final Command command) {
-        builder = ImmutableArtifactStore.builder()
-            .tempDirFactory (new SubdirTempDir())
+        builder.tempDirFactory (new SubdirTempDir())
             .executableNaming(new UUIDTempNaming())
             .downloadConfig (new PostgresDownloadConfigBuilder().defaultsForCommand(command).build())
             .downloader(new UrlConnectionDownloader());

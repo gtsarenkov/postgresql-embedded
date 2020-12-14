@@ -6,14 +6,12 @@ import de.flapdoodle.embed.process.distribution.Platform;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
 import de.flapdoodle.embed.process.runtime.CommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
-import ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig;
-import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
-import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
-import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
+import ru.yandex.qatools.embed.postgresql.config.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +34,8 @@ public class EmbeddedPostgres implements AutoCloseable {
             "--locale=C",
             "--lc-collate=C",
             "--lc-ctype=C");
-    private static final List<String> DEFAULT_POSTGRES_PARAMS = asList();
+    private static final List<String> DEFAULT_POSTGRES_PARAMS = Collections.emptyList ();
+    private static final Long DEFAULT_POSTGRES_STOP_TIMEOUT = 60000L;
     private final String dataDir;
     private final Version version;
     private PostgresProcess process;
@@ -68,11 +67,11 @@ public class EmbeddedPostgres implements AutoCloseable {
         return new RuntimeConfigBuilder()
                 .defaults(Command.Postgres)
                 .artifactStore(new PostgresArtifactStoreBuilder()
-                        .defaults(Command.Postgres)
-                        .download(new PostgresDownloadConfigBuilder()
+                        .defaults(Command.Postgres).build(builder -> builder
+                        .downloadConfig(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres)
                                 .build())
-                        .build())
+                        .build()))
                 .commandLinePostProcessor(privilegedWindowsRunasPostprocessor())
                 .build();
     }
@@ -118,13 +117,13 @@ public class EmbeddedPostgres implements AutoCloseable {
         return new RuntimeConfigBuilder()
                 .defaults(cmd)
                 .artifactStore(new PostgresArtifactStoreBuilder()
-                        .defaults(cmd)
-                        .tempDir(cachedDir)
-                        .download(new PostgresDownloadConfigBuilder()
+                        .defaults(cmd).build(builder -> builder
+                        .tempDirFactory(cachedDir)
+                        .downloadConfig(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(cmd)
                                 .packageResolver(new PackagePaths(cmd, cachedDir))
                                 .build())
-                        .build())
+                        .build()))
                 .commandLinePostProcessor(privilegedWindowsRunasPostprocessor())
                 .build();
     }
@@ -164,7 +163,7 @@ public class EmbeddedPostgres implements AutoCloseable {
      */
     public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
                         List<String> additionalParams) throws IOException {
-        return start(runtimeConfig, host, port, dbName, user, password, additionalParams, DEFAULT_POSTGRES_PARAMS);
+        return start(runtimeConfig, host, port, dbName, user, password, additionalParams, DEFAULT_POSTGRES_PARAMS, DEFAULT_POSTGRES_STOP_TIMEOUT);
     }
 
     /**
@@ -182,13 +181,14 @@ public class EmbeddedPostgres implements AutoCloseable {
      * @throws IOException if an I/O error occurs during the process startup
      */
     public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
-                        List<String> additionalInitDbParams, List<String> additionalPostgresParams) throws IOException {
+                        List<String> additionalInitDbParams, List<String> additionalPostgresParams, Long stopTimeoutInMillis) throws IOException {
         final PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
         config = new PostgresConfig(version,
                 new AbstractPostgresConfig.Net(host, port),
                 new AbstractPostgresConfig.Storage(dbName, dataDir),
                 new AbstractPostgresConfig.Timeout(),
-                new AbstractPostgresConfig.Credentials(user, password)
+                new AbstractPostgresConfig.Credentials(user, password),
+                stopTimeoutInMillis
         );
         config.getAdditionalInitDbParams().addAll(additionalInitDbParams);
         config.getAdditionalPostgresParams().addAll(additionalPostgresParams);
