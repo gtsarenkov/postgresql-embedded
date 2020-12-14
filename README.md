@@ -7,7 +7,7 @@ Embedded PostgreSQL server provides a platform neutral way for running postgres 
 This library is based on [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process).
 
 ## Motivation of the fork
-This fork has been created to adopt project under Windows environment and keep it more or less use of latest [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process). Version 3.0.1 is used as of 14.29.2020.
+This fork has been created to adopt project under Windows environment and keep it more or less use of latest [Flapdoodle OSS's embed process](https://github.com/flapdoodle-oss/de.flapdoodle.embed.process). Version 3.0.1 is used as of 14.12.2020.
 
 The refactorings of the library was not backwards compatible, thus breaking changes introduced in this project as well.
 
@@ -43,7 +43,7 @@ Add the following dependency to your pom.xml:
 <dependency>
     <groupId>ru.yandex.qatools.embed</groupId>
     <artifactId>postgresql-embedded</artifactId>
-    <version>2.10</version>
+    <version>2.10</version>
 </dependency>
 ```
 ### Gradle

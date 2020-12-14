@@ -10,13 +10,19 @@ public enum PostgreSQLVersion implements de.flapdoodle.embed.process.distributio
      * on their
      * <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">binary download site</a>.
      */
+    V13_2("13.1-1"),
+    V12_5("12.5-1"),
     V12_2("12.2-1"),
+    V11_10("11.10-1"),
     V11_7("11.7-1"),
     V11_2("11.2-1"),
+    V10_15("10.15-1"),
     V10_12("10.12-1"),
     V10_7("10.7-1"),
+    V9_6_20("9.6.20-1"),
     V9_6_17("9.6.17-1"),
     V9_6_12("9.6.12-1"),
+    @Deprecated V9_5_24("9.5.24-1"),
     @Deprecated V9_5_21("9.5.21-1"),
     @Deprecated V9_5_16("9.5.16-1");
 
@@ -37,18 +43,19 @@ public enum PostgreSQLVersion implements de.flapdoodle.embed.process.distributio
     }
 
     public enum Main implements de.flapdoodle.embed.process.distribution.Version {
-        @Deprecated V9_5(V9_5_21),
-        V9_6(V9_6_17),
-        V10(V10_12),
-        PRODUCTION(V10_7),
+        @Deprecated V9_5(V9_5_24),
+        V9_6(V9_6_20),
+        V10(V10_15),
+        PRODUCTION(V13_2),
         /**
          * 11 for Mac OS X and Windows x86-64 only because EnterpriseDB reduced the
          * <a href="https://www.enterprisedb.com/docs/en/11.0/PG_Inst_Guide_v11/PostgreSQL_Installation_Guide.1.04.html">supported platforms</a>
          * on their
          * <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">binary download site</a>.
          */
-        V11(V11_7),
-        V12(V12_2);
+        V11(V11_10),
+        V12(V12_5),
+        V13(V13_2);
 
         private final de.flapdoodle.embed.process.distribution.Version _latest;
 
