@@ -63,7 +63,7 @@ public class TestDownloads {
                             method = null;
                             classCandidate = classCandidate.getSuperclass();
                         }
-                    } while (method == null || classCandidate != null);
+                    } while (method == null && classCandidate != null);
                     // If method checkDistribution not found we should fail test. Let it be NullPointerException for now.
                     method.setAccessible(true);
                     MatcherAssert.assertThat("Distribution: " + distribution + " should be accessible", method.invoke(artifactStore, distribution), is(true));
