@@ -1,21 +1,21 @@
 plugins {
   id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
   id "com.github.ben-manes.versions" version "${dependencyUpdatePluginVersion}"
+  id 'com.github.jk1.dependency-license-report' version "${licenseReportVersion}"
+  id "org.owasp.dependencycheck" version "${dependencyCheckVersion}"
+  id "com.github.spotbugs" version "${spotbugsPluginVersion}"
 }
 apply plugin: "java"
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: "com.github.spotbugs"
 
 group = "ru.yandex.qatools.embed"
 version = "${embeddedPostgresqlVersion}"
 
 repositories {
   jcenter()
-  flatDir {
-    // Location for custom compiled embedded process library.
-    dirs "../de.flapdoodle.embed.process/target"
-  }
 }
 
 dependencyManagement {
@@ -61,12 +61,29 @@ dependencies {
   testImplementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
   testImplementation "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
   testImplementation "org.slf4j:jul-to-slf4j:${slf4jVersion}"
+
+  spotbugsSlf4j "org.slf4j:slf4j-simple:${slf4jVersion}"
+  spotbugs "com.github.spotbugs:spotbugs:${spotbugsVersion}"
 }
 
 java {
   withSourcesJar()
 }
 
+spotbugs {
+  ignoreFailures = true
+}
+
+spotbugsMain {
+  reports {
+    xml.enabled = false
+    html {
+      enabled = true
+    }
+  }
+}
+
+spotbugsTest.enabled = false
 test {
   useJUnitPlatform ()
   ignoreFailures = true

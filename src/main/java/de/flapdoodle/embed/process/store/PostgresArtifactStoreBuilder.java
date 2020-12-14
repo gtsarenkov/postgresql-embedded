@@ -5,20 +5,23 @@ import ru.yandex.qatools.embed.postgresql.Command;
 import ru.yandex.qatools.embed.postgresql.config.PostgresDownloadConfigBuilder;
 import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
 
-public class PostgresArtifactStoreBuilder extends
-        de.flapdoodle.embed.process.store.ArtifactStoreBuilder {
+import java.util.function.Function;
 
-    public PostgresArtifactStoreBuilder defaults(Command command) {
-        tempDir().setDefault(new SubdirTempDir());
-        executableNaming().setDefault(new UUIDTempNaming());
-        download().setDefault(new PostgresDownloadConfigBuilder().defaultsForCommand(command).build());
-        downloader().setDefault(new Downloader());
+public class PostgresArtifactStoreBuilder {
+    private ImmutableArtifactStore.Builder builder;
+
+    public PostgresArtifactStoreBuilder defaults(final Command command) {
+        builder = ImmutableArtifactStore.builder()
+            .tempDirFactory (new SubdirTempDir())
+            .executableNaming(new UUIDTempNaming())
+            .downloadConfig (new PostgresDownloadConfigBuilder().defaultsForCommand(command).build())
+            .downloader(new UrlConnectionDownloader());
         return this;
     }
 
-    @Override
-    public IArtifactStore build() {
-        return new CachedPostgresArtifactStore(get(DOWNLOAD_CONFIG), get(TEMP_DIR_FACTORY), get(EXECUTABLE_NAMING), get(DOWNLOADER));
+    public ArtifactStore build(Function<ImmutableArtifactStore.Builder, ImmutableArtifactStore> builder) {
+        final ImmutableArtifactStore artifactStore = builder.apply(this.builder);
+        return new CachedPostgresArtifactStore(artifactStore.downloadConfig(), artifactStore.tempDirFactory(), artifactStore.executableNaming(), artifactStore.downloader());
     }
 
 }
