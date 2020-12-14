@@ -6,12 +6,14 @@ import de.flapdoodle.embed.process.distribution.Platform;
 import de.flapdoodle.embed.process.store.IArtifactStore;
 import de.flapdoodle.embed.process.store.ImmutableArtifactStore;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -46,9 +48,25 @@ public class TestDownloads {
                     if (! supported(distribution)) {
                         continue;
                     }
-                    final Method method = artifactStore.getClass ().getDeclaredMethod ("checkDistribution", Distribution.class);
-                    method.setAccessible (true);
-                    assertThat("Distribution: " + distribution + " should be accessible", method.invoke (artifactStore, distribution), is(true));
+                    Class<?> classCandidate = artifactStore.getClass ();
+                    Method method;
+                    do {
+                        try {
+                            if (Objects.nonNull(classCandidate)) {
+                                method = classCandidate.getDeclaredMethod("checkDistribution", Distribution.class);
+                            }
+                            else {
+                                method = null;
+                            }
+                        }
+                        catch (NoSuchMethodException ignored) {
+                            method = null;
+                            classCandidate = classCandidate.getSuperclass();
+                        }
+                    } while (method == null || classCandidate != null);
+                    // If method checkDistribution not found we should fail test. Let it be NullPointerException for now.
+                    method.setAccessible(true);
+                    MatcherAssert.assertThat("Distribution: " + distribution + " should be accessible", method.invoke(artifactStore, distribution), is(true));
                 }
             }
         }

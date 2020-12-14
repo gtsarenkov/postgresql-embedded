@@ -26,7 +26,7 @@ public class PostgresArtifactStoreBuilder {
         return this;
     }
 
-    public ArtifactStore build(Function<ImmutableArtifactStore.Builder, ImmutableArtifactStore> builder) {
+    public PostgresArtifactStore build(Function<ImmutableArtifactStore.Builder, ImmutableArtifactStore> builder) {
         final ImmutableArtifactStore artifactStore = builder.apply(this.builder);
         return new CachedPostgresArtifactStore(artifactStore.downloadConfig(), artifactStore.tempDirFactory(), artifactStore.executableNaming(), artifactStore.downloader());
     }
