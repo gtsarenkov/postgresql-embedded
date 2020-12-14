@@ -32,15 +32,20 @@ public class PostgresFilesToExtract extends FilesToExtract {
     private final FileSet    fileSet;
     private final String       extractBasePath;
 
-    public PostgresFilesToExtract(Directory dirFactory, ITempNaming executableNaming, FileSet fileSet, Distribution distribution) {
+    public PostgresFilesToExtract(Directory dirFactory, TempNaming executableNaming, FileSet fileSet, Distribution distribution) {
         super(dirFactory, executableNaming, fileSet);
         this.fileSet = fileSet;
 
         if (dirFactory.asFile() != null) {
             final File file = new File(dirFactory.asFile(), "pgsql-" + distribution.version().asInDownloadPath());
             if (!file.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                file.mkdir();
+                if (!file.mkdir()) {
+                    if (file.exists ()) {
+                        LOGGER.info("Trying to create existing directory {}", file.getAbsolutePath ());
+                    } else {
+                        LOGGER.warn("Trying to create existing directory {}", file.getAbsolutePath ());
+                    }
+                }
             }
             this.extractBasePath = file.getPath();
         } else {
@@ -53,7 +58,7 @@ public class PostgresFilesToExtract extends FilesToExtract {
      * TODO: hacky method. Should be considered for complete rewriting //NOSONAR
      */
     @Override
-    public IExtractionMatch find(final IArchiveEntry entry) {//NOSONAR
+    public ExtractionMatch find(final de.flapdoodle.embed.process.extract.ArchiveEntry entry) {//NOSONAR
         if (this.extractBasePath == null) {
             return null;
         }
@@ -62,7 +67,7 @@ public class PostgresFilesToExtract extends FilesToExtract {
         }
 
         final Path path = Paths.get(this.extractBasePath, entry.getName());
-        return new IExtractionMatch() { //NOSONAR
+        return new ExtractionMatch() { //NOSONAR
             @Override
             public File write(InputStream source, long size) throws IOException { //NOSONAR
                 boolean isSymLink = false;
@@ -105,7 +110,9 @@ public class PostgresFilesToExtract extends FilesToExtract {
                         }
                         // hack to mark binaries as executable
                         if (entry.getName().matches(EXECUTABLE_PATTERN)) {
-                            outputFile.setExecutable(true);
+                            if (!outputFile.setExecutable(true)) {
+                                LOGGER.warn("Cannot set executable permission for {}", entry.getName());
+                            }
                         }
                     }
                     return outputFile;

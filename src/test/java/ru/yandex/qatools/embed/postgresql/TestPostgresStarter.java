@@ -45,10 +45,12 @@ public class TestPostgresStarter {
         RuntimeConfig runtimeConfig = buildRuntimeConfig();
 
         PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
-        final PostgresConfig config = new PostgresConfig(PRODUCTION, new AbstractPostgresConfig.Net(
-                "localhost", findFreePort()
-        ), new AbstractPostgresConfig.Storage("test"), new AbstractPostgresConfig.Timeout(),
-                new AbstractPostgresConfig.Credentials("user", "password"));
+        final PostgresConfig config = new PostgresConfig(PRODUCTION,
+            new AbstractPostgresConfig.Net("localhost", findFreePort()),
+            new AbstractPostgresConfig.Storage("test"),
+            new AbstractPostgresConfig.Timeout(),
+            new AbstractPostgresConfig.Credentials("user", "password"),
+            AbstractPostgresConfig.DEFAULT_STOP_TIMEOUT);
         config.getAdditionalInitDbParams().addAll(asList(
                 "-E", "SQL_ASCII",
                 "--locale=C",
@@ -72,12 +74,12 @@ public class TestPostgresStarter {
         return new RuntimeConfigBuilder()
                 .defaults(Command.Postgres)
                 .artifactStore(new NonCachedPostgresArtifactStoreBuilder()
-                        .defaults(Command.Postgres)
-                        .download(new PostgresDownloadConfigBuilder()
+                        .defaults(Command.Postgres).build(builder -> builder
+                        .downloadConfig (new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres)
                                 .progressListener(new LoggingProgressListener(logger, Level.ALL))
                                 .build())
-                        .build())
+                        .build()))
                 .build();
     }
 

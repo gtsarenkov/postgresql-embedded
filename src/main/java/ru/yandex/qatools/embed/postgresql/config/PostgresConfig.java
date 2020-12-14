@@ -12,12 +12,22 @@ import static ru.yandex.qatools.embed.postgresql.distribution.PostgreSQLVersion.
  */
 public class PostgresConfig extends AbstractPostgresConfig<PostgresConfig> {
 
-    public PostgresConfig(AbstractPostgresConfig config, Command command) {
+    public static final long STOP_TIMEOUT_IN_MILLIS = 30000L;
+
+    public PostgresConfig(AbstractPostgresConfig<PostgresConfig> config) {
+        super(config);
+    }
+
+    public PostgresConfig(AbstractPostgresConfig<PostgresConfig> config, Command command) {
         super(config, command);
     }
 
-    public PostgresConfig(AbstractPostgresConfig config) {
-        super(config);
+    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout) {
+        super(version, network, storage, timeout);
+    }
+
+    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, Command command, Long stopTimeoutInMillis) {
+        super(version, network, storage, timeout, cred, new PostgresSupportConfig(command), stopTimeoutInMillis);
     }
 
     public PostgresConfig(Version version, String dbName) throws IOException {
@@ -28,21 +38,13 @@ public class PostgresConfig extends AbstractPostgresConfig<PostgresConfig> {
         this(version, new Net(host, port), new Storage(dbName), new Timeout());
     }
 
-    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, Command command) {
-        super(version, network, storage, timeout, cred, new SupportConfig(command));
-    }
-
-    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred) {
-        this(version, network, storage, timeout, cred, Command.Postgres);
-    }
-
-    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout) {
-        super(version, network, storage, timeout);
+    public PostgresConfig(Version version, Net network, Storage storage, Timeout timeout, Credentials cred, Long stopTimeoutInMillis) {
+        this(version, network, storage, timeout, cred, Command.Postgres, stopTimeoutInMillis);
     }
 
     public static PostgresConfig defaultWithDbName(String dbName, String user, String password) throws IOException {
         return new PostgresConfig(PRODUCTION, new Net(), new Storage(dbName), new Timeout(),
-                new Credentials(user, password));
+                new Credentials(user, password), STOP_TIMEOUT_IN_MILLIS);
     }
 
     public static PostgresConfig defaultWithDbName(String dbName) throws IOException {

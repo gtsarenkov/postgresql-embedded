@@ -15,11 +15,11 @@ import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 public class RuntimeConfigBuilder {
 
     public ImmutableRuntimeConfig.Builder defaults(Command command) {
-        return de.flapdoodle.embed.process.config.ImmutableRuntimeConfig.builder()
+        return ImmutableRuntimeConfig.builder()
           .isDaemonProcess(false)
           .processOutput (ProcessOutput.getDefaultInstance(command.commandName()))
           .commandLinePostProcessor (new CommandLinePostProcessor.Noop())
-          .artifactStore (storeBuilder().defaults(command).build());
+          .artifactStore (storeBuilder().defaults(command).build(builder -> builder.build()));
     }
 
     public ImmutableRuntimeConfig.Builder defaultsWithLogger(Command command, Logger logger) {
@@ -29,7 +29,7 @@ public class RuntimeConfigBuilder {
           .build();
         return defaults(command)
           .processOutput (PostgresProcessOutputConfig.getInstance(command, logger))
-          .artifactStore(storeBuilder().defaults(command).download(downloadConfig).build());
+          .artifactStore(storeBuilder().defaults(command).build(builder -> builder.downloadConfig(downloadConfig).build()));
     }
 
     private PostgresArtifactStoreBuilder storeBuilder() {

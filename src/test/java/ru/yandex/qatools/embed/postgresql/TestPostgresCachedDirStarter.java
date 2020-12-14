@@ -21,13 +21,13 @@ public class TestPostgresCachedDirStarter extends TestPostgresStarter {
         return new RuntimeConfigBuilder()
                 .defaults(cmd)
                 .artifactStore(new PostgresArtifactStoreBuilder()
-                        .defaults(cmd)
-                        .tempDir(cachedDir)
-                        .download(new PostgresDownloadConfigBuilder()
+                        .defaults(cmd).build(builder -> builder
+                        .tempDirFactory(cachedDir)
+                        .downloadConfig(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(cmd)
                                 .packageResolver(new PackagePaths(cmd, cachedDir))
                                 .build())
-                        .build())
+                        .build()))
                 .build();
     }
 }

@@ -14,9 +14,9 @@ import java.util.List;
  * createdb process
  * (helper to initialize the DB)
  */
-class CreateDbProcess<E extends CreateDbExecutable> extends AbstractPGProcess<E, CreateDbProcess> {
+class CreateDbProcess extends AbstractPGProcess<CreateDbExecutable, CreateDbProcess> {
 
-    public CreateDbProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, E executable) throws IOException {
+    public CreateDbProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, CreateDbExecutable executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
     }
 

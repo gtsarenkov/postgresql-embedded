@@ -4,7 +4,7 @@ import de.flapdoodle.embed.process.config.store.DistributionDownloadPath;
 import de.flapdoodle.embed.process.config.store.PackageResolver;
 import de.flapdoodle.embed.process.config.store.ProxyFactory;
 import de.flapdoodle.embed.process.config.store.TimeoutConfig;
-import de.flapdoodle.embed.process.extract.ITempNaming;
+import de.flapdoodle.embed.process.extract.TempNaming;
 import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 
@@ -15,7 +15,7 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     private final DistributionDownloadPath downloadPath;
     private final ProgressListener progressListener;
     private final Directory artifactStorePath;
-    private final ITempNaming fileNaming;
+    private final TempNaming fileNaming;
     private final String downloadPrefix;
     private final String userAgent;
     private final TimeoutConfig timeoutConfig;
@@ -23,7 +23,7 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     private PackageResolver packageResolver;
 
     public MutableDownloadConfig(DistributionDownloadPath downloadPath, String downloadPrefix, PackageResolver packageResolver,//NOSONAR
-                                 Directory artifactStorePath, ITempNaming fileNaming, ProgressListener progressListener, String userAgent,//NOSONAR
+                                 Directory artifactStorePath, TempNaming fileNaming, ProgressListener progressListener, String userAgent,//NOSONAR
                                  TimeoutConfig timeoutConfig, ProxyFactory proxyFactory) { //NOSONAR
         super();
         this.downloadPath = downloadPath;
@@ -53,7 +53,7 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     }
 
     @Override
-    public ITempNaming getFileNaming() {
+    public TempNaming getFileNaming() {
         return fileNaming;
     }
 

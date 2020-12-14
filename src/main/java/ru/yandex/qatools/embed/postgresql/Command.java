@@ -10,12 +10,13 @@ public enum Command {
     Psql("psql", PsqlExecutable.class),
     PgDump("pg_dump", PsqlExecutable.class),
     PgRestore("pg_restore", PsqlExecutable.class),
-    Createuser("createuser", PsqlExecutable.class),
-    ;
+    Createuser("createuser", PsqlExecutable.class);
 
     private final String commandName;
+    // TODO: review unchecked use of AbstractPGProcess
     private final Class<? extends AbstractPGExecutable<PostgresConfig, ? extends AbstractPGProcess>> executableClass;
 
+    // TODO: review unchecked use of AbstractPGProcess
     Command(String commandName,
             Class<? extends AbstractPGExecutable<PostgresConfig, ? extends AbstractPGProcess>>
                     executableClass) {
