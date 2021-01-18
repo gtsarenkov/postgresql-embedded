@@ -1,5 +1,6 @@
 package ru.yandex.qatools.embed.postgresql;
 
+import de.flapdoodle.embed.process._Refactor;
 import de.flapdoodle.embed.process.config.store.DistributionPackage;
 import de.flapdoodle.embed.process.config.store.FileSet;
 import de.flapdoodle.embed.process.config.store.FileType;
@@ -26,6 +27,15 @@ public class PackagePaths implements PackageResolver {
         return version.asInDownloadPath();
     }
 
+    /**
+     * Nice try but really bad idea. For some reasons it is used to override cache/temp directory.
+     * Should provide a correct initialization routine instead.
+     *
+     * @return {@link Directory}
+     * @deprecated since 3.0.1-SNAPSHOT
+     */
+    @Deprecated(forRemoval = true, since = "3.0.1-SNAPSHOT")
+    @_Refactor
     public Directory getTempDir() {
         return tempDir;
     }
@@ -68,9 +78,9 @@ public class PackagePaths implements PackageResolver {
           }
           try {
             return FileSet.builder()
-              .addEntry(FileType.Executable, tempDir.asFile().getPath(),
+              .addEntry(FileType.Executable, "/pgsql/bin/" + cmdPattern,
                 "^.*pgsql\\\\bin\\\\" + cmdPattern + "$")
-              .addEntry(FileType.Executable, tempDir.asFile().getPath(),
+              .addEntry(FileType.Executable,  "/pgsql/bin/" + cmdPattern,
                 "^.*pgsql/bin/" + cmdPattern + "$")
               .build();
           } catch (Exception e) {
