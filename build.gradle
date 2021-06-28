@@ -15,7 +15,7 @@ group = "ru.yandex.qatools.embed"
 version = "${embeddedPostgresqlVersion}"
 
 repositories {
-  jcenter()
+  mavenCentral()
 }
 
 dependencyManagement {
