@@ -1,0 +1,9 @@
+pluginManagement {
+  plugins {
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    id 'com.github.ben-manes.versions' version "${dependencyUpdatePluginVersion}"
+    id 'com.github.jk1.dependency-license-report' version "${licenseReportVersion}"
+    id 'org.owasp.dependencycheck' version "${dependencyCheckVersion}"
+    id 'com.github.spotbugs' version "${spotbugsPluginVersion}"
+  }
+}

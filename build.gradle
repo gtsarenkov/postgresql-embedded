@@ -1,9 +1,9 @@
 plugins {
-  id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
-  id "com.github.ben-manes.versions" version "${dependencyUpdatePluginVersion}"
-  id 'com.github.jk1.dependency-license-report' version "${licenseReportVersion}"
-  id "org.owasp.dependencycheck" version "${dependencyCheckVersion}"
-  id "com.github.spotbugs" version "${spotbugsPluginVersion}"
+  id 'io.spring.dependency-management'
+  id "com.github.ben-manes.versions"
+  id 'com.github.jk1.dependency-license-report'
+  id "org.owasp.dependencycheck"
+  id "com.github.spotbugs"
 }
 apply plugin: "java"
 apply plugin: 'idea'
