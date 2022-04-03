@@ -21,14 +21,15 @@
 package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.config.process.ProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
-import de.flapdoodle.embed.process.distribution.Platform;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Processors;
 import de.flapdoodle.embed.process.io.StreamToLineProcessor;
 import de.flapdoodle.embed.process.io.file.Files;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
+import de.flapdoodle.os.OS;
+import de.flapdoodle.os.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
@@ -71,11 +72,11 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
                     "--pwfile=" + pwFile.getAbsolutePath()
             ));
         }
-        if (distribution.platform() == Platform.Windows) {
+        if (distribution.platform().operatingSystem () != OS.Windows) {
             ret.addAll(config.getAdditionalInitDbParams());
         }
         ret.add(config.storage().dbDir().getAbsolutePath());
-        if (distribution.platform() != Platform.Windows) {
+        if (distribution.platform().operatingSystem () != OS.Windows) {
             ret.addAll(config.getAdditionalInitDbParams());
         }
         return ret;
@@ -86,9 +87,9 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
         final ProcessOutput outputConfig = runtimeConfig.processOutput();
         final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(
                 "performing post-bootstrap initialization",
-                singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.getOutput()));
+                singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.output ()));
         Processors.connect(process.getReader(), logWatch);
-        Processors.connect(process.getError(), StreamToLineProcessor.wrap(outputConfig.getError()));
+        Processors.connect(process.getError(), StreamToLineProcessor.wrap(outputConfig.error ()));
         logWatch.waitForResult(getConfig().timeout().startupTimeout());
     }
 }

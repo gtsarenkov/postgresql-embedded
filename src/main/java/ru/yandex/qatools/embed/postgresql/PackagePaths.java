@@ -46,7 +46,7 @@ public class PackagePaths implements PackageResolver {
         @Override
         public ArchiveType archiveType () {
           ArchiveType archiveType;
-          switch (distribution.platform()) {
+          switch (distribution.platform().operatingSystem ()) {
             case Linux:
               archiveType = ArchiveType.TGZ;
               break;
@@ -64,7 +64,7 @@ public class PackagePaths implements PackageResolver {
         @Override
         public FileSet fileSet () {
           String cmdPattern;
-          switch (distribution.platform()) {
+          switch (distribution.platform().operatingSystem ()) {
             case Linux:
             case OS_X:
               cmdPattern = command.commandName();
@@ -107,7 +107,7 @@ public class PackagePaths implements PackageResolver {
             }
 
             String splatform;
-            switch (distribution.platform()) {
+            switch (distribution.platform().operatingSystem ()) {
               case Linux:
                 splatform = "linux";
                 break;
@@ -123,9 +123,9 @@ public class PackagePaths implements PackageResolver {
             }
 
             String bitsize = "";
-            switch (distribution.bitsize()) {
+            switch (distribution.platform ().architecture ().bitSize ()) {
               case B32:
-                switch (distribution.platform()) {
+                switch (distribution.platform().operatingSystem ()) {
                   case Windows:
                     switch (downloadVersion) {
                       case "9.5.21-1":
@@ -143,7 +143,7 @@ public class PackagePaths implements PackageResolver {
                 }
                 break;
               case B64:
-                switch (distribution.platform()) {
+                switch (distribution.platform().operatingSystem ()) {
                   case Linux:
                     bitsize = "-x64";
                     break;
@@ -169,7 +169,7 @@ public class PackagePaths implements PackageResolver {
                 }
                 break;
               default:
-                throw new IllegalArgumentException("Unknown BitSize " + distribution.bitsize());
+                throw new IllegalArgumentException("Unknown BitSize " + distribution.platform ().architecture ().bitSize ());
             }
 
             return "postgresql-" + downloadVersion + "-" + splatform + bitsize + "-binaries" + "." + sarchiveType;

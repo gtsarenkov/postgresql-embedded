@@ -11,11 +11,11 @@ public class PostgresProcessOutputConfig {
     private PostgresProcessOutputConfig() {}
 
     public static ProcessOutput getDefaultInstance(Command command) {
-        return ProcessOutput.getDefaultInstance(command.commandName());
+        return ProcessOutput.namedConsole (command.commandName());
     }
 
     public static ProcessOutput getInstance(Command command, org.slf4j.Logger logger) {
-        return ProcessOutput.getInstance(command.commandName(), logger);
+        return ProcessOutput.named (command.commandName(), logger);
     }
 
 }
