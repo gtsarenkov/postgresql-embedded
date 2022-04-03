@@ -68,6 +68,11 @@ public class MutableDownloadConfig implements IMutableDownloadConfig {
     }
 
     @Override
+    public Optional<String> getAuthorization () {
+        return Optional.empty ();
+    }
+
+    @Override
     public PackageResolver getPackageResolver() {
         return packageResolver;
     }

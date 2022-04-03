@@ -17,7 +17,7 @@ public class RuntimeConfigBuilder {
     public ImmutableRuntimeConfig.Builder defaults(Command command) {
         return ImmutableRuntimeConfig.builder()
           .isDaemonProcess(false)
-          .processOutput (ProcessOutput.getDefaultInstance(command.commandName()))
+          .processOutput (ProcessOutput.namedConsole (command.commandName()))
           .commandLinePostProcessor (new CommandLinePostProcessor.Noop())
           .artifactStore (storeBuilder().defaults(command).build(builder -> builder.build()));
     }

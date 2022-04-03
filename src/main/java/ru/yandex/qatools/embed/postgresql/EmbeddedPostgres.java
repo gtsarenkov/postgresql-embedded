@@ -2,10 +2,11 @@ package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.distribution.Version;
-import de.flapdoodle.embed.process.distribution.Platform;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
 import de.flapdoodle.embed.process.runtime.CommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
+import de.flapdoodle.os.OS;
+import de.flapdoodle.os.Platform;
 import ru.yandex.qatools.embed.postgresql.config.*;
 
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class EmbeddedPostgres implements AutoCloseable {
     }
 
     private static CommandLinePostProcessor privilegedWindowsRunasPostprocessor() {
-        if (Platform.detect().equals(Platform.Windows)) {
+        if (Platform.detect().operatingSystem () == OS.Windows) {
             try {
                 // Based on https://stackoverflow.com/a/11995662
                 final int adminCommandResult = Runtime.getRuntime().exec("net session").waitFor();
