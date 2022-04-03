@@ -9,10 +9,13 @@ apply plugin: "java"
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: "com.github.spotbugs"
 
 group = "ru.yandex.qatools.embed"
 version = "${embeddedPostgresqlVersion}"
+
+configurations {
+  compileOnly.extendsFrom annotationProcessor
+}
 
 repositories {
   mavenCentral()
@@ -25,28 +28,32 @@ dependencyManagement {
 }
 
 dependencies {
+  annotationProcessor "org.immutables:value:${immutablesVersion}"
+  annotationProcessor "org.immutables:builder:${immutablesVersion}"
+
   implementation "de.flapdoodle.embed:de.flapdoodle.embed.process:${embedProcessVersion}"
   implementation "commons-io:commons-io:${commonsIoVersion}"
   implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
   implementation "org.apache.commons:commons-compress:${commonsCompressVersion}"
   implementation "org.postgresql:postgresql:${postgresqlJdbcVersion}"
   implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+
   runtimeOnly "net.java.dev.jna:jna:${jnaPlatformVersion}"
   runtimeOnly "net.java.dev.jna:jna-platform:${jnaPlatformVersion}"
 
-  testImplementation ("org.springframework:spring-beans")  {
+  testImplementation("org.springframework:spring-beans") {
     exclude module: "spring-boot-starter-logging"
     exclude module: "logback-classic"
   }
-  testImplementation ("org.springframework:spring-core")  {
+  testImplementation("org.springframework:spring-core") {
     exclude module: "spring-boot-starter-logging"
     exclude module: "logback-classic"
   }
-  testImplementation ("org.springframework:spring-context")  {
+  testImplementation("org.springframework:spring-context") {
     exclude module: "spring-boot-starter-logging"
     exclude module: "logback-classic"
   }
-  testImplementation ("org.springframework:spring-test")  {
+  testImplementation("org.springframework:spring-test") {
     exclude module: "spring-boot-starter-logging"
     exclude module: "logback-classic"
   }
@@ -57,7 +64,7 @@ dependencies {
   testImplementation "junit:junit:${junitVersion}"
   testImplementation "org.mockito:mockito-core:${mockitoVersion}"
   testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
-  testImplementation ("org.kubek2k:springockito:${springOckitoVersion}") {
+  testImplementation("org.kubek2k:springockito:${springOckitoVersion}") {
     exclude module: "mockito-all"
   }
   testRuntimeOnly "org.slf4j:slf4j-log4j12:${slf4jVersion}"
@@ -87,7 +94,7 @@ spotbugsMain {
 
 spotbugsTest.enabled = false
 test {
-  useJUnitPlatform ()
+  useJUnitPlatform()
   ignoreFailures = true
   reports {
     html.enabled = true
@@ -116,9 +123,17 @@ jar {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
     }
+  }
+}
+
+idea {
+  pathVariables('PROJECT_DIR': file(rootProject.projectDir).parentFile)
+  project {
+    vcs = 'Git'
+    jdkName = "15"
+  }
 }
