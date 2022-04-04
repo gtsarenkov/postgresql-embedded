@@ -130,10 +130,12 @@ publishing {
   }
 }
 
-idea {
-  pathVariables('PROJECT_DIR': file(rootProject.projectDir).parentFile)
-  project {
-    vcs = 'Git'
-    jdkName = "15"
+if (rootProject.equals(project)) {
+  idea {
+    pathVariables('PROJECT_DIR': file(rootProject.projectDir).parentFile)
+    project {
+      vcs = 'Git'
+      jdkName = "15"
+    }
   }
 }
