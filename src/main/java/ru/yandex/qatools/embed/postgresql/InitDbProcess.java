@@ -72,7 +72,7 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
                     "--pwfile=" + pwFile.getAbsolutePath()
             ));
         }
-        if (distribution.platform().operatingSystem () != OS.Windows) {
+        if (distribution.platform().operatingSystem () == OS.Windows) {
             ret.addAll(config.getAdditionalInitDbParams());
         }
         ret.add(config.storage().dbDir().getAbsolutePath());
