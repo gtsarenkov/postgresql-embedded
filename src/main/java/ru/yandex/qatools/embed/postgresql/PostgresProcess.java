@@ -97,9 +97,6 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                     .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor()).build();
 
             final PostgresConfig postgresConfig = new PostgresConfig(config).withArgs(args);
-            if (Command.InitDb == cmd) {
-                postgresConfig.withAdditionalInitDbParams(config.getAdditionalInitDbParams());
-            }
             final Executable<?, ? extends AbstractPGProcess> exec = getCommand(cmd, runtimeCfg)
                     .prepare(postgresConfig);
             AbstractPGProcess proc = exec.start();

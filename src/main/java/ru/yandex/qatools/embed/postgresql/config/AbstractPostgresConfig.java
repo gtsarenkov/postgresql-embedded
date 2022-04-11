@@ -39,6 +39,8 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig<?>
     protected AbstractPostgresConfig(AbstractPostgresConfig<C> config, Command postgres) {
         // TODO: review default value for timeout -1 or 0 and use INDEFINITE.
         this(config.version(), config.net(), config.storage(), config.timeout(), config.credentials, new PostgresSupportConfig (postgres), config.stopTimeoutInMillis ().orElse (DEFAULT_STOP_TIMEOUT));
+        this.additionalInitDbParams.addAll(config.getAdditionalInitDbParams());
+        this.additionalPostgresParams.addAll(config.getAdditionalPostgresParams());
     }
 
     protected AbstractPostgresConfig(AbstractPostgresConfig<C> config) {
