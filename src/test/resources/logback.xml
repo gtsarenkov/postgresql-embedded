@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="30000">
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.out</target>
+    <encoder>
+      <pattern>%d %5p [%t] %c \(%F:%L\) - %m%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>WARN</level>
+    </filter>
+  </appender>
+  <appender name="stderr" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
+    <encoder>
+      <pattern>%d %5p [%t] %c \(%F:%L\) - %m%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+  </appender>
+  <appender name="D" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+    <File>postgresql-embedded.debug.log</File>
+    <encoder>
+      <pattern>%d [%-5p] [%t] %c \(%F:%L\) - %message%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>DEBUG</level>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>5</maxIndex>
+      <FileNamePattern>postgresql-embedded.debug.log.%i</FileNamePattern>
+    </rollingPolicy>
+  </appender>
+  <root level="DEBUG">
+    <appender-ref ref="stdout"/>
+    <appender-ref ref="stderr"/>
+    <appender-ref ref="D"/>
+  </root>
+</configuration>
