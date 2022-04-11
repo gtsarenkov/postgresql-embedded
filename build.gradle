@@ -43,19 +43,15 @@ dependencies {
 
   testImplementation("org.springframework:spring-beans") {
     exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
   }
   testImplementation("org.springframework:spring-core") {
     exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
   }
   testImplementation("org.springframework:spring-context") {
     exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
   }
   testImplementation("org.springframework:spring-test") {
     exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
   }
   testImplementation "org.junit.jupiter:junit-jupiter-api"
   //TODO: update to 5.x
@@ -67,7 +63,7 @@ dependencies {
   testImplementation("org.kubek2k:springockito:${springOckitoVersion}") {
     exclude module: "mockito-all"
   }
-  testRuntimeOnly "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+  testRuntimeOnly "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
   testRuntimeOnly "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
   testRuntimeOnly "org.slf4j:jul-to-slf4j:${slf4jVersion}"
 
