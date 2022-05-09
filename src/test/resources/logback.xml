@@ -27,6 +27,9 @@
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
       <level>DEBUG</level>
     </filter>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>5MB</maxFileSize>
+    </triggeringPolicy>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <maxIndex>5</maxIndex>
       <FileNamePattern>postgresql-embedded.debug.log.%i</FileNamePattern>

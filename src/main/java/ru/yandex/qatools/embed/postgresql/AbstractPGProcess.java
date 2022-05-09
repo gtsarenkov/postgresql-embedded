@@ -31,6 +31,7 @@ public abstract class AbstractPGProcess<E extends Executable<PostgresConfig, P>,
                         + pathSeparatorChar
                         + JAVA_HOME + separator + "jre" + separator + "bin"
         );
+        processBuilder.inheritIO ();
     }
 
     @Override

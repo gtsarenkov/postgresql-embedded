@@ -2,11 +2,15 @@ package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.distribution.Version;
+import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
+import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.CommandLinePostProcessor;
 import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import de.flapdoodle.os.OS;
 import de.flapdoodle.os.Platform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.config.*;
 
 import java.io.IOException;
@@ -26,6 +30,7 @@ import static ru.yandex.qatools.embed.postgresql.util.SocketUtil.findFreePort;
  * Helper class simplifying the start up configuration for embedded postgres
  */
 public class EmbeddedPostgres implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger (EmbeddedPostgres.class);
     public static final String DEFAULT_USER = "postgres";//NOSONAR
     public static final String DEFAULT_PASSWORD = "postgres";//NOSONAR
     public static final String DEFAULT_DB_NAME = "postgres";//NOSONAR
@@ -71,6 +76,7 @@ public class EmbeddedPostgres implements AutoCloseable {
                         .defaults(Command.Postgres).build(builder -> builder
                         .downloadConfig(new PostgresDownloadConfigBuilder()
                                 .defaultsForCommand(Command.Postgres)
+                                            .progressListener (new Slf4jProgressListener(logger, Slf4jLevel.TRACE))
                                 .build())
                         .build()))
                 .commandLinePostProcessor(privilegedWindowsRunasPostprocessor())
