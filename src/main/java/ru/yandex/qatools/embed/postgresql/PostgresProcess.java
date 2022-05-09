@@ -1,7 +1,7 @@
 package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.config.process.ProcessOutput;
 import de.flapdoodle.embed.process.config.store.DownloadConfig;
 import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
@@ -9,7 +9,6 @@ import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
 import de.flapdoodle.embed.process.io.directories.Directory;
-import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Executable;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
 import de.flapdoodle.embed.process.store.*;
@@ -77,8 +76,8 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
             final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput,
                     failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
 
-            final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore ();
-            final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder ().from(artifactStore));
+            final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore();
+            final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder().from(artifactStore));
 
             DownloadConfig downloadCfg = artifactStore.downloadConfig();
             final ImmutableDownloadConfig.Builder builderDownloadConfig = ImmutableDownloadConfig.builder().from(downloadCfg);
@@ -88,11 +87,11 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 tempDir = ((PackagePaths) downloadCfg.getPackageResolver()).getTempDir();
             }
             builderDownloadConfig.packageResolver(new PackagePaths(cmd, tempDir));
-            final ArtifactStore newArtifactoryStore = artifactStoreBuilder.build (builder -> builder.downloadConfig (builderDownloadConfig.build ()).build ());
+            final ArtifactStore newArtifactoryStore = artifactStoreBuilder.build (builder -> builder.downloadConfig(builderDownloadConfig.build ()).build ());
 
             final RuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
                     .isDaemonProcess(false)
-                    .processOutput(new ProcessOutput(logWatch, logWatch, logWatch))
+                    .processOutput(ProcessOutput.builder().output (logWatch).error(logWatch).commands(logWatch).build())
                     .artifactStore(newArtifactoryStore)
                     .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor()).build();
 

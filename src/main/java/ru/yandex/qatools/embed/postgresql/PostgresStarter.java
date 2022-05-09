@@ -1,7 +1,7 @@
 package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.config.process.ImmutableProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
@@ -46,8 +46,8 @@ public class PostgresStarter<E extends AbstractPGExecutable<PostgresConfig, P>, 
                 "started", new HashSet<>(singletonList("failed")),
                 new Slf4jStreamProcessor(getLogger("postgres"), Slf4jLevel.TRACE));
         return new RuntimeConfigBuilder ()
-                .defaults(cmd)
-                .processOutput(new ProcessOutput(logWatch, logWatch, logWatch)).build();
+            .defaults(cmd)
+            .processOutput(ImmutableProcessOutput.builder().output(logWatch).error(logWatch).commands(logWatch).build()).build();
     }
 
     public static <E extends AbstractPGExecutable<PostgresConfig, P>, P extends AbstractPGProcess<E, P>>
