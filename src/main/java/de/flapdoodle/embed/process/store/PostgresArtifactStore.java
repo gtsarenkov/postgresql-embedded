@@ -104,6 +104,9 @@ public class PostgresArtifactStore extends ArtifactStore {
     }
 
     private void createOrCheckDir(File dir) {
+        if (!dir.exists()) {
+            LOGGER.debug("Required directory {}", dir);
+        }
         if (!dir.exists() && !dir.mkdirs()) {
             throw new IllegalArgumentException("Could NOT create Directory " + dir);
         }
