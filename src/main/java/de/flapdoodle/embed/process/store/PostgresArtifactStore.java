@@ -25,7 +25,7 @@ import static org.apache.commons.io.FileUtils.deleteQuietly;
  */
 public class PostgresArtifactStore extends ArtifactStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresArtifactStore.class);
-    private DownloadConfig downloadConfig;
+    private final DownloadConfig downloadConfig;
     private final Directory tempDirFactory;
     private final TempNaming executableNaming;
     private final Downloader downloader;
@@ -73,20 +73,28 @@ public class PostgresArtifactStore extends ArtifactStore {
         return downloader;
     }
 
+    private boolean checkDistribution(Distribution distribution) throws IOException {
+        return LocalArtifactStore.checkArtifact(downloadConfig(), distribution) || LocalArtifactStore
+            .store(downloadConfig(), distribution, downloader().download(downloadConfig(), distribution));
+    }
+
     @Override
     public Optional<ExtractedFileSet> extractFileSet(Distribution distribution) throws IOException {
-        PackageResolver packageResolver = downloadConfig.getPackageResolver();
-        File artifact = getArtifact(downloadConfig, distribution);
-        final ArchiveType archiveType = packageResolver.packageFor(distribution).archiveType();
-        Extractor extractor = Extractors.getExtractor(archiveType);
-        try {
-            final FileSet fileSet = packageResolver.packageFor(distribution).fileSet();
-            return Optional.of(extractor.extract(downloadConfig, artifact,
-                    new PostgresFilesToExtract(tempDirFactory, executableNaming, fileSet, distribution)));
-        } catch (Exception e) {
-            LOGGER.error("Failed to extract file set:", e);
-            return Optional.empty();
+        if (checkDistribution(distribution)) {
+            PackageResolver packageResolver = downloadConfig.getPackageResolver();
+            File artifact = getArtifact(downloadConfig, distribution);
+            final ArchiveType archiveType = packageResolver.packageFor(distribution).archiveType();
+            Extractor extractor = Extractors.getExtractor(archiveType);
+            try {
+                final FileSet fileSet = packageResolver.packageFor(distribution).fileSet();
+                return Optional.of(extractor.extract(downloadConfig, artifact,
+                        new PostgresFilesToExtract(tempDirFactory, executableNaming, fileSet, distribution)));
+            } catch (Exception e) {
+                LOGGER.error("Failed to extract file set:", e);
+                return Optional.empty();
+            }
         }
+        return Optional.empty();
     }
 
     private File getArtifact(DownloadConfig runtime, Distribution distribution) {
