@@ -73,6 +73,7 @@ dependencies {
 
 java {
   withSourcesJar()
+  withJavadocJar()
 }
 
 spotbugs {
@@ -100,15 +101,6 @@ test {
 javadoc {
   failOnError = false
   options.addStringOption('Xdoclint:none')
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
-}
-
-artifacts {
-  archives javadocJar
 }
 
 jar {
