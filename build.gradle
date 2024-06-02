@@ -94,7 +94,7 @@ test {
   useJUnitPlatform()
   ignoreFailures = true
   reports {
-    html.enabled = true
+    html.required = true
   }
 }
 
