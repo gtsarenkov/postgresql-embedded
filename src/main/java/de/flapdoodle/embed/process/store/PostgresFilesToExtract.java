@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 public class PostgresFilesToExtract extends FilesToExtract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresFilesToExtract.class);
 
-    private static final String SKIP_PATTERN = "pgsql/(doc|include|symbols|pgAdmin[^/]*)/.+";
+    private static final String SKIP_PATTERN = "pgsql/(doc|include|symbols|pgAdmin[^/]*|StackBuilder).+";
     private static final String EXECUTABLE_PATTERN = "pgsql/bin/.+";
 
     private final FileSet    fileSet;
@@ -105,6 +105,9 @@ public class PostgresFilesToExtract extends FilesToExtract {
                                     LOGGER.trace("Failed to extract symlink", e);
                                 }
                             } else {
+                                if (!outputFile.getParentFile ().exists ()) {
+                                    outputFile.getParentFile ().mkdirs ();
+                                }
                                 Files.write(source, outputFile);
                             }
                         }
