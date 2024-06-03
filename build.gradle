@@ -53,10 +53,10 @@ dependencies {
   testImplementation("org.springframework:spring-test") {
     exclude module: "spring-boot-starter-logging"
   }
-  testImplementation "org.junit.jupiter:junit-jupiter-api"
+  //testImplementation "org.junit.jupiter:junit-jupiter-api"
   //TODO: update to 5.x
   //testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-  testImplementation "org.junit.vintage:junit-vintage-engine"
+  //testImplementation "org.junit.vintage:junit-vintage-engine"
   testImplementation "junit:junit:${junitVersion}"
   testImplementation "org.mockito:mockito-core:${mockitoVersion}"
   testImplementation "org.hamcrest:hamcrest:${hamcrestVersion}"
@@ -91,7 +91,7 @@ spotbugsMain {
 
 spotbugsTest.enabled = false
 test {
-  useJUnitPlatform()
+  useJUnit()
   ignoreFailures = true
   reports {
     html.required = true
@@ -123,7 +123,7 @@ if (rootProject.equals(project)) {
     pathVariables('PROJECT_DIR': file(rootProject.projectDir).parentFile)
     project {
       vcs = 'Git'
-      jdkName = "15"
+      jdkName = "21"
     }
   }
 }
