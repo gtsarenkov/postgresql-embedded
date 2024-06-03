@@ -12,11 +12,14 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 
 public class TestMultipleInstance {
+
+    public static final String POSTGRE_SQL_PRODUCTION = "PostgreSQL 16.";
+
     @Test
     public void itShouldAllowToRunTwoInstancesWithDifferentVersions() throws Exception {
         final EmbeddedPostgres postgres0 = new EmbeddedPostgres();
         start(postgres0);
-        checkVersion(postgres0, "PostgreSQL 13.");
+        checkVersion(postgres0, POSTGRE_SQL_PRODUCTION);
         postgres0.stop();
 
         final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V9_6);
@@ -33,8 +36,8 @@ public class TestMultipleInstance {
         final EmbeddedPostgres postgres1 = new EmbeddedPostgres();
         start(postgres1);
 
-        checkVersion(postgres0, "PostgreSQL 13.");
-        checkVersion(postgres1, "PostgreSQL 13.");
+        checkVersion(postgres0, POSTGRE_SQL_PRODUCTION);
+        checkVersion(postgres1, POSTGRE_SQL_PRODUCTION);
 
         postgres0.stop();
         postgres1.stop();

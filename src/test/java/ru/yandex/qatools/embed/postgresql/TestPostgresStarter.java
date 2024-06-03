@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -85,7 +86,7 @@ public class TestPostgresStarter {
 
     @After
     public void tearDown() throws Exception {
-        conn.close();
+        if (Objects.nonNull(conn)) conn.close();
         process.stop();
     }
 
