@@ -101,7 +101,15 @@ test {
 
 javadoc {
   failOnError = false
-  options.addStringOption('Xdoclint:none')
+  configure(options) {
+    tags (
+      'todo:X',
+      'apiNote:a:API Note:',
+      'implSpec:a:Implementation Requirements:',
+      'implNote:a:Implementation Note:'
+    )
+    addStringOption('Xdoclint:none')
+  }
 }
 
 jar {
