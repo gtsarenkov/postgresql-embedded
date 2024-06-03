@@ -12,7 +12,10 @@ import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
 import de.flapdoodle.embed.process.io.directories.Directory;
 import de.flapdoodle.embed.process.runtime.Executable;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
-import de.flapdoodle.embed.process.store.*;
+import de.flapdoodle.embed.process.store.ArtifactStore;
+import de.flapdoodle.embed.process.store.ImmutableArtifactStore;
+import de.flapdoodle.embed.process.store.PostgresArtifactStore;
+import de.flapdoodle.embed.process.store.PostgresArtifactStoreBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
@@ -23,26 +26,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static de.flapdoodle.embed.process.io.file.Files.forceDelete;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.slf4j.LoggerFactory.getLogger;
-import static ru.yandex.qatools.embed.postgresql.Command.CreateDb;
-import static ru.yandex.qatools.embed.postgresql.Command.InitDb;
-import static ru.yandex.qatools.embed.postgresql.Command.PgDump;
-import static ru.yandex.qatools.embed.postgresql.Command.PgRestore;
-import static ru.yandex.qatools.embed.postgresql.Command.Psql;
+import static ru.yandex.qatools.embed.postgresql.Command.*;
 import static ru.yandex.qatools.embed.postgresql.PostgresStarter.getCommand;
 import static ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig.Storage;
 
@@ -73,8 +68,8 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                                  PostgresConfig config, RuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
                                  Set<String> failOutput, String... args) {
         try {
-            final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput,
-                                                                                 failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
+            final Slf4jStreamProcessor destination = new Slf4jStreamProcessor (LOGGER, Slf4jLevel.TRACE);
+            final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput, failOutput, destination);
 
             final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore();
             final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder().from(artifactStore));
@@ -91,7 +86,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
 
             final RuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
                     .isDaemonProcess(false)
-                    .processOutput(ProcessOutput.builder().output (logWatch).error(logWatch).commands(logWatch).build())
+                    .processOutput(ProcessOutput.builder().output(logWatch).error(logWatch).commands(logWatch).build())
                     .artifactStore(newArtifactoryStore)
                     .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor()).build();
 
@@ -99,15 +94,48 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
             final Executable<?, ? extends AbstractPGProcess> exec = getCommand(cmd, runtimeCfg)
                     .prepare(postgresConfig);
             AbstractPGProcess proc = exec.start();
-            logWatch.waitForResult(DEFAULT_CMD_TIMEOUT);
-            if (!logWatch.isInitWithSuccess() && !silent) {
-                LOGGER.warn("Possibly failed to run {}:\n{}", cmd.commandName(), logWatch.getOutput());
+            CompletableFuture<Integer> f2 = CompletableFuture.supplyAsync(() -> {
+                try {
+                    return proc.waitFor();
+                }
+                catch(InterruptedException e) {
+                    LOGGER.warn("Command {} interrupted", cmd);
+                    throw new RuntimeException("Command {%s} interrupted".formatted(cmd), e);
+                }
+            }).whenComplete((Integer exitCode, Throwable error) -> {
+                if (exitCode != 0) {
+                    LOGGER.warn("Exit code {}: {}", cmd, exitCode, error);
+                }
+            });
+            String output;
+            boolean initWithSuccess;
+            String failureFound;
+            do {
+                synchronized(logWatch) {
+                    initWithSuccess = logWatch.isInitWithSuccess();
+                    failureFound = logWatch.getFailureFound();
+                    if (!initWithSuccess && Objects.isNull(failureFound)) {
+                        logWatch.waitForResult(DEFAULT_CMD_TIMEOUT);
+                        initWithSuccess = logWatch.isInitWithSuccess();
+                        failureFound = logWatch.getFailureFound();
+                        LOGGER.info("Caught output: {} {}", initWithSuccess, failureFound);
+                    }
+                    output = logWatch.getOutput();
+                }
+                if (f2.isDone() && proc.isProcessRunning()) {
+                    LOGGER.warn("Process {} waiting finished but it is still running", cmd);
+                }
+                if (!"<EOF>".equals(Objects.requireNonNullElse(failureFound, "<EOF>"))) {
+                    break;
+                }
+            } while (proc.isProcessRunning() && !initWithSuccess && Objects.isNull(failureFound));
+            if (!initWithSuccess && !silent) {
+                LOGGER.warn("Possibly failed to run {} {}:\n{}", cmd.commandName(), failureFound, output);
             }
-            proc.waitFor();
-            return logWatch.getOutput();
-        } catch (IOException | InterruptedException e) {
+            return output;
+        } catch (IOException e) {
             if (!silent) {
-                LOGGER.warn("Failed to run command {}", cmd.commandName(), e);
+                LOGGER.warn("Failed to run command {}", cmd, e);
             }
         }
         return null;
