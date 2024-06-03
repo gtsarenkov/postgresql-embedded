@@ -6,6 +6,7 @@ import de.flapdoodle.embed.process.config.store.DownloadConfig;
 import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
+import de.flapdoodle.embed.process.io.LogWatchStreamProcessor;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
 import de.flapdoodle.embed.process.io.directories.Directory;
@@ -16,7 +17,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 import ru.yandex.qatools.embed.postgresql.config.RuntimeConfigBuilder;
-import ru.yandex.qatools.embed.postgresql.ext.LogWatchStreamProcessor;
 import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
 
 import java.io.File;
@@ -74,7 +74,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                                  Set<String> failOutput, String... args) {
         try {
             final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput,
-                    failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
+                                                                                 failOutput, new Slf4jStreamProcessor(LOGGER, Slf4jLevel.TRACE));
 
             final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore();
             final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder().from(artifactStore));

@@ -24,16 +24,15 @@ import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.process.ProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
+import de.flapdoodle.embed.process.io.LogWatchStreamProcessor;
 import de.flapdoodle.embed.process.io.Processors;
 import de.flapdoodle.embed.process.io.StreamToLineProcessor;
 import de.flapdoodle.embed.process.io.file.Files;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
 import de.flapdoodle.os.OS;
-import de.flapdoodle.os.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
-import ru.yandex.qatools.embed.postgresql.ext.LogWatchStreamProcessor;
 import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
 
 import java.io.File;
@@ -85,7 +84,7 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
     @Override
     protected void onAfterProcessStart(ProcessControl process, RuntimeConfig runtimeConfig) {
         final ProcessOutput outputConfig = runtimeConfig.processOutput();
-        final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(
+        final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor (
                 "performing post-bootstrap initialization",
                 singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.output ()));
         Processors.connect(process.getReader(), logWatch);
