@@ -86,9 +86,9 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
         final ProcessOutput outputConfig = runtimeConfig.processOutput();
         final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor (
                 "performing post-bootstrap initialization",
-                singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.output ()));
+                singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.output()));
         Processors.connect(process.getReader(), logWatch);
-        Processors.connect(process.getError(), StreamToLineProcessor.wrap(outputConfig.error ()));
+        Processors.connect(process.getError(), StreamToLineProcessor.wrap(outputConfig.error()));
         logWatch.waitForResult(getConfig().timeout().startupTimeout());
     }
 }
