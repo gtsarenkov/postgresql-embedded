@@ -137,3 +137,5 @@ if (rootProject.equals(project)) {
     }
   }
 }
+
+task allDeps(type: DependencyReportTask, description: "Prints all dependencies for all configurations") {}
