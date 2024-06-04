@@ -11,7 +11,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 group = "ru.yandex.qatools.embed"
-version = "${embeddedPostgresqlVersion}"
+version = "${embedProcessVersion}-SNAPSHOT"
 
 configurations {
   compileOnly.extendsFrom annotationProcessor
@@ -111,6 +111,7 @@ javadoc {
     )
     addStringOption('Xdoclint:none')
   }
+  options.addStringOption('Xdoclint:none')
 }
 
 jar {
