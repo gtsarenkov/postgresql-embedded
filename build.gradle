@@ -93,6 +93,7 @@ spotbugsMain {
 spotbugsTest.enabled = false
 test {
   useJUnit()
+  jvmArgs(["--add-opens", "java.base/java.lang=ALL-UNNAMED"])
   ignoreFailures = true
   reports {
     html.required = true
