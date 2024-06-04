@@ -66,7 +66,7 @@ public enum PostgreSQLVersion implements de.flapdoodle.embed.process.distributio
          * on their
          * <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">binary download site</a>.
          */
-        V11(V11_21),
+        @Deprecated V11(V11_21),
         V12(V12_19),
         V13(V13_15),
         V14(V14_12),

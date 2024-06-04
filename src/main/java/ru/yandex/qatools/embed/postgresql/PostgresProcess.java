@@ -104,7 +104,7 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 }
             }).whenComplete((Integer exitCode, Throwable error) -> {
                 if (exitCode != 0) {
-                    LOGGER.warn("Exit code {}: {}", cmd, exitCode, error);
+                    LOGGER.warn("Exit code {}: {}({})", cmd, exitCode, Integer.toHexString (exitCode), error);
                 }
             });
             String output;

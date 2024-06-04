@@ -22,9 +22,9 @@ public class TestMultipleInstance {
         checkVersion(postgres0, POSTGRE_SQL_PRODUCTION);
         postgres0.stop();
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V9_6);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V16);
         start(postgres1);
-        checkVersion(postgres1, "PostgreSQL 9.6");
+        checkVersion(postgres1, "PostgreSQL 16.");
         postgres1.stop();
     }
 
@@ -45,14 +45,14 @@ public class TestMultipleInstance {
 
     @Test
     public void itShouldAllowToRunTwoInstancesAtSameTimeAndWithDifferentVersions() throws Exception {
-        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(PostgreSQLVersion.Main.V9_6);
+        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(PostgreSQLVersion.Main.V12);
         start(postgres0);
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V10);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V13);
         start(postgres1);
 
-        checkVersion(postgres0, "PostgreSQL 9.6");
-        checkVersion(postgres1, "PostgreSQL 10.");
+        checkVersion(postgres0, "PostgreSQL 12.");
+        checkVersion(postgres1, "PostgreSQL 13.");
 
         postgres0.stop();
         postgres1.stop();
