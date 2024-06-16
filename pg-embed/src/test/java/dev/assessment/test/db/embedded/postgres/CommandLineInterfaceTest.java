@@ -24,6 +24,9 @@ class CommandLineInterfaceTest {
     @RegisterExtension
     public static Recording recording2 = Recorder.with("HowTo2.md", TabSize.spaces(2));
 
+    @RegisterExtension
+    public static Recording recordingDot = Recorder.with("stateDiagram.dot", TabSize.spaces(2));
+
     @Test
     public void detectPlatform() {
         recording1.begin();
@@ -40,11 +43,14 @@ class CommandLineInterfaceTest {
     @Test
     public void initialVersion() {
         recording2.begin();
+        recordingDot.begin();
         Transitions transitions = PostgresStarter.getInstance();
         recording2.end();
+        recordingDot.end();
 //        TransitionWalker walker = transitions.walker();
         String dot = TransitionGraph.edgeGraphAsDot("process factory sample", transitions);
         recording2.output("sample.dot", dot);
+        recordingDot.output("stateDiagram.dot", dot);
     }
 
 }

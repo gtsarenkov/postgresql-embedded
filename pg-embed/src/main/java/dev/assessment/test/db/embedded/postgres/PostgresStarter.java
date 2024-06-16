@@ -43,70 +43,73 @@ import java.util.Map;
  */
 public class PostgresStarter {
 
-  public static Transitions getInstance () {
-    return Transitions.from (InitTempDirectory.withPlatformTempRandomSubDir (), Derive.given (TempDir.class)
-                                                                                      .state (ProcessWorkingDir.class)
-                                                                                      .with (Directories.deleteOnTearDown (TempDir.createDirectoryWith ("workDir"), ProcessWorkingDir::of)),
-                             Derive.given (TempDir.class)
-                                   .state (DownloadCache.class)
-                                   .deriveBy (tempDir -> new LocalDownloadCache (tempDir.value ()
-                                                                                        .resolve ("archives")))
-                                   .withTransitionLabel ("setup DownloadCache"), Derive.given (de.flapdoodle.embed.process.io.directories.TempDir.class)
-                                                                                       .state (ExtractedFileSetStore.class)
-                                                                                       .deriveBy (tempDir -> new ContentHashExtractedFileSetStore (tempDir.value ()
-                                                                                                                                                          .resolve ("fileSets")))
-                                                                                       .withTransitionLabel ("setup ExtractedFileSetStore"),
+    public static Transitions getInstance() {
+        return Transitions.from(
+                InitTempDirectory.withPlatformTempRandomSubDir(),
+                Derive.given(TempDir.class)
+                        .state(ProcessWorkingDir.class)
+                        .with(Directories.deleteOnTearDown(TempDir.createDirectoryWith("workDir"), ProcessWorkingDir::of)),
+                Derive.given(TempDir.class)
+                        .state(DownloadCache.class)
+                        .deriveBy(tempDir -> new LocalDownloadCache(tempDir.value()
+                                .resolve("archives")))
+                        .withTransitionLabel("setup DownloadCache"),
+                Derive.given(TempDir.class)
+                        .state(ExtractedFileSetStore.class)
+                        .deriveBy(tempDir -> new ContentHashExtractedFileSetStore(tempDir.value()
+                                .resolve("fileSets")))
+                        .withTransitionLabel("setup ExtractedFileSetStore"),
 
-                             Start.to (Name.class)
-                                  .initializedWith (Name.of ("pg_ctl"))
-                                  .withTransitionLabel ("create Name"),
+                Start.to(Name.class)
+                        .initializedWith(Name.of("pg_ctl"))
+                        .withTransitionLabel("create Name"),
 
-                             Start.to (SupportConfig.class)
-                                  .initializedWith (SupportConfig.generic ())
-                                  .withTransitionLabel ("create default"), Start.to (ProcessConfig.class)
-                                                                                .initializedWith (ProcessConfig.defaults ())
-                                                                                .withTransitionLabel ("create default"), Start.to (ProcessEnv.class)
-                                                                                                                              .initializedWith (ProcessEnv.of (postgreSqlEnv ()))
-                                                                                                                              .withTransitionLabel ("create empty env"),
+                Start.to(SupportConfig.class)
+                        .initializedWith(SupportConfig.generic())
+                        .withTransitionLabel("create default"), Start.to(ProcessConfig.class)
+                        .initializedWith(ProcessConfig.defaults())
+                        .withTransitionLabel("create default"), Start.to(ProcessEnv.class)
+                        .initializedWith(ProcessEnv.of(postgreSqlEnv()))
+                        .withTransitionLabel("create empty env"),
 
-                             Start.to (Version.class)
-                                  .initializedWith (Version.of ("16.3-2"))
-                                  .withTransitionLabel ("set version"), Derive.given (Name.class)
-                                                                              .state (ProcessOutput.class)
-                                                                              .deriveBy (name -> ProcessOutput.namedConsole (name.value ()))
-                                                                              .withTransitionLabel ("create named console"),
+                Start.to(Version.class)
+                        .initializedWith(Version.of("16.3-2"))
+                        .withTransitionLabel("set version"), Derive.given(Name.class)
+                        .state(ProcessOutput.class)
+                        .deriveBy(name -> ProcessOutput.namedConsole(name.value()))
+                        .withTransitionLabel("create named console"),
 
-                             Start.to (ProgressListener.class)
-                                  .providedBy (StandardConsoleProgressListener::new)
-                                  .withTransitionLabel ("progressListener"),
+                Start.to(ProgressListener.class)
+                        .providedBy(StandardConsoleProgressListener::new)
+                        .withTransitionLabel("progressListener"),
 
-                             Start.to (ProcessArguments.class)
-                                  .initializedWith (ProcessArguments.of (Arrays.asList ("--help")))
-                                  .withTransitionLabel ("create arguments"),
+                Start.to(ProcessArguments.class)
+                        .initializedWith(ProcessArguments.of(Arrays.asList("--help")))
+                        .withTransitionLabel("create arguments"),
 
-                             Derive.given (Version.class)
-                                   .state (Distribution.class)
-                                   .deriveBy (version -> Distribution.detectFor (CommonOS.list (), version))
-                                   .withTransitionLabel ("version + platform"),
+                Derive.given(Version.class)
+                        .state(Distribution.class)
+                        .deriveBy(version -> Distribution.detectFor(CommonOS.list(), version))
+                        .withTransitionLabel("version + platform"),
 
-                             PackageOfDistribution.with (dist -> Package.builder ()
-                                                                        .archiveType (ArchiveType.ZIP)
-                                                                        .fileSet (FileSet.builder ()
-                                                                                         .addEntry (FileType.Executable, "pg_ctl")
-                                                                                         .build ())
-                                                                        //.url(serverUrl + "phantomjs-" + dist.version().asInDownloadPath() + "-linux-x86_64.tar.bz2")
-                                                                        .url ("%spostgresql-%s-windows-x64-binaries.zip".formatted (16.3 - 2))
-                                                                        .build ()),
+                PackageOfDistribution.with(dist -> Package.builder()
+                        .archiveType(ArchiveType.ZIP)
+                        .fileSet(FileSet.builder()
+                                .addEntry(FileType.Executable, "pg_ctl")
+                                .build())
+                        //.url(serverUrl + "phantomjs-" + dist.version().asInDownloadPath() + "-linux-x86_64.tar.bz2")
+                        .url("%spostgresql-%s-windows-x64-binaries.zip".formatted(16.3 - 2))
+                        .build()),
 
-                             DownloadPackage.withDefaults (),
+                DownloadPackage.withDefaults(),
 
-                             ExtractPackage.withDefaults ()
-                                           .withExtractedFileSetStore (StateID.of (ExtractedFileSetStore.class)),
+                ExtractPackage.withDefaults()
+                        .withExtractedFileSetStore(StateID.of(ExtractedFileSetStore.class)),
 
-                             Executer.withDefaults ());
-  }
+                Executer.withDefaults());
+    }
 
-  private static Map<String, ? extends String> postgreSqlEnv () {
-    return new HashMap<> ();
-  }
+    private static Map<String, ? extends String> postgreSqlEnv() {
+        return new HashMap<>();
+    }
 }
