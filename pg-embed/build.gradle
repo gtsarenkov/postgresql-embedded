@@ -2,10 +2,21 @@ plugins {
     id 'java-library'
     id 'idea'
     id 'application'
+    id 'maven-publish'
+    id "com.github.ben-manes.versions"
 }
+apply from: "$rootDir/gradle/buildDependencyUpdates.gradle"
 
 dependencies {
+    api("de.flapdoodle.embed:de.flapdoodle.embed.process:4.11.0")
+    api("de.flapdoodle:de.flapdoodle.os:1.5.6")
+    api("org.slf4j:slf4j-api:2.0.13")
 
+    runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.assertj:assertj-core:3.26.0")
+    testImplementation("de.flapdoodle.testdoc:de.flapdoodle.testdoc:1.6.1")
 }
 
 jar {
@@ -16,5 +27,10 @@ jar {
 
 test {
     useJUnitPlatform()
+    systemProperties = [ "de.flapdoodle.testdoc.destination": buildDir ]
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+
 }
 
