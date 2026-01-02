@@ -103,7 +103,7 @@ test {
 javadoc {
   failOnError = false
   configure(options) {
-    tags (
+    tags(
       'todo:X',
       'apiNote:a:API Note:',
       'implSpec:a:Implementation Requirements:',
@@ -139,4 +139,8 @@ if (rootProject.equals(project)) {
   }
 }
 
-task allDeps(type: DependencyReportTask, description: "Prints all dependencies for all configurations") {}
+if (tasks.findByName("allDeps") == null) {
+  tasks.register("allDeps", DependencyReportTask).configure {
+    description "Prints all dependencies for all configurations"
+  }
+}
