@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 
 public class TestMultipleInstance {
 
-    public static final String POSTGRE_SQL_PRODUCTION = "PostgreSQL 16.";
+    public static final String POSTGRE_SQL_PRODUCTION = "PostgreSQL 17.";
 
     @Test
     public void itShouldAllowToRunTwoInstancesWithDifferentVersions() throws Exception {
@@ -22,9 +22,9 @@ public class TestMultipleInstance {
         checkVersion(postgres0, POSTGRE_SQL_PRODUCTION);
         postgres0.stop();
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V16);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V17);
         start(postgres1);
-        checkVersion(postgres1, "PostgreSQL 16.");
+        checkVersion(postgres1, "PostgreSQL 17.");
         postgres1.stop();
     }
 
@@ -45,14 +45,14 @@ public class TestMultipleInstance {
 
     @Test
     public void itShouldAllowToRunTwoInstancesAtSameTimeAndWithDifferentVersions() throws Exception {
-        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(PostgreSQLVersion.Main.V12);
+        final EmbeddedPostgres postgres0 = new EmbeddedPostgres(PostgreSQLVersion.Main.V17);
         start(postgres0);
 
-        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V13);
+        final EmbeddedPostgres postgres1 = new EmbeddedPostgres(PostgreSQLVersion.Main.V18);
         start(postgres1);
 
-        checkVersion(postgres0, "PostgreSQL 12.");
-        checkVersion(postgres1, "PostgreSQL 13.");
+        checkVersion(postgres0, "PostgreSQL 17.");
+        checkVersion(postgres1, "PostgreSQL 18.");
 
         postgres0.stop();
         postgres1.stop();

@@ -111,17 +111,15 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
             boolean initWithSuccess;
             String failureFound;
             do {
-                synchronized(logWatch) {
+                initWithSuccess = logWatch.isInitWithSuccess();
+                failureFound = logWatch.getFailureFound();
+                if (!initWithSuccess && Objects.isNull(failureFound)) {
+                    logWatch.waitForResult(DEFAULT_CMD_TIMEOUT);
                     initWithSuccess = logWatch.isInitWithSuccess();
                     failureFound = logWatch.getFailureFound();
-                    if (!initWithSuccess && Objects.isNull(failureFound)) {
-                        logWatch.waitForResult(DEFAULT_CMD_TIMEOUT);
-                        initWithSuccess = logWatch.isInitWithSuccess();
-                        failureFound = logWatch.getFailureFound();
-                        LOGGER.info("Caught output: {} {}", initWithSuccess, failureFound);
-                    }
-                    output = logWatch.getOutput();
+                    LOGGER.info("Caught output: {} {}", initWithSuccess, failureFound);
                 }
+                output = logWatch.getOutput();
                 if (f2.isDone() && proc.isProcessRunning()) {
                     LOGGER.warn("Process {} waiting finished but it is still running", cmd);
                 }

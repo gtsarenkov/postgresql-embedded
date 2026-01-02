@@ -22,6 +22,18 @@ public class TestDownloads {
 
     /** Version 11 binary downloads are available for OS X and Windows 64 bit only */
     private boolean supported(Distribution distribution) {
+        for (PostgreSQLVersion.Main value : PostgreSQLVersion.Main.values()) {
+            try {
+                if (PostgreSQLVersion.Main.class.getField(value.name()).isAnnotationPresent(Deprecated.class)
+                    && distribution.version().equals(value)) {
+                    return false;
+                }
+            }
+            catch (NoSuchFieldException e) {
+                throw new IllegalArgumentException ("Version " + value + " not found", e);
+            }
+        }
+
         if (distribution.version().asInDownloadPath().startsWith("9.")
             || distribution.version().asInDownloadPath().startsWith("10.")) {
             return true;
