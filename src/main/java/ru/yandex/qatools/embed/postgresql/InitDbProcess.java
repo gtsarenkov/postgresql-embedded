@@ -21,12 +21,8 @@
 package ru.yandex.qatools.embed.postgresql;
 
 import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.process.ProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
-import de.flapdoodle.embed.process.io.LogWatchStreamProcessor;
-import de.flapdoodle.embed.process.io.Processors;
-import de.flapdoodle.embed.process.io.StreamToLineProcessor;
 import de.flapdoodle.embed.process.io.file.Files;
 import de.flapdoodle.embed.process.runtime.ProcessControl;
 import de.flapdoodle.os.OS;
@@ -42,7 +38,6 @@ import java.util.List;
 
 import static de.flapdoodle.embed.process.io.file.Files.createTempFile;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 import static java.util.UUID.randomUUID;
 
 /**
@@ -54,6 +49,7 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
 
     public InitDbProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, E executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
+        LOGGER.debug("InitDbProcess created for distribution: {}, config: {}, runtimeConfig: {}", distribution, config, runtimeConfig);
     }
 
     @Override
@@ -83,12 +79,7 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
 
     @Override
     protected void onAfterProcessStart(ProcessControl process, RuntimeConfig runtimeConfig) {
-        final ProcessOutput outputConfig = runtimeConfig.processOutput();
-        final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor (
-                "performing post-bootstrap initialization",
-                singleton("[initdb error]"), StreamToLineProcessor.wrap(outputConfig.output()));
-        Processors.connect(process.getReader(), logWatch);
-        Processors.connect(process.getError(), StreamToLineProcessor.wrap(outputConfig.error()));
-        logWatch.waitForResult(getConfig().timeout().startupTimeout());
+        LOGGER.debug("InitDbProcess started with process: {}, runtimeConfig: {}", process, runtimeConfig);
+        super.onAfterProcessStart(process, runtimeConfig);
     }
 }

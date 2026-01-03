@@ -6,7 +6,7 @@ import de.flapdoodle.embed.process.config.store.DownloadConfig;
 import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
-import de.flapdoodle.embed.process.io.LogWatchStreamProcessor;
+import de.flapdoodle.embed.process.io.ListeningStreamProcessor;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
 import de.flapdoodle.embed.process.io.directories.Directory;
@@ -24,10 +24,15 @@ import ru.yandex.qatools.embed.postgresql.ext.SubdirTempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static de.flapdoodle.embed.process.io.file.Files.forceDelete;
 import static java.lang.System.currentTimeMillis;
@@ -46,8 +51,8 @@ import static ru.yandex.qatools.embed.postgresql.config.AbstractPostgresConfig.S
  */
 public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, PostgresProcess> {
     private static final int MAX_CREATEDB_TRIALS = 3;
-    private static final int DEFAULT_CMD_TIMEOUT = 2000;
-    private static final Logger LOGGER = getLogger(PostgresProcess.class);
+    private static final int DEFAULT_CMD_TIMEOUT = 20000;
+    private static final Logger LOGGER = getLogger (PostgresProcess.class);
     private final RuntimeConfig runtimeConfig;
 
     private volatile boolean processReady = false;
@@ -64,12 +69,106 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         return runCmd(false, config, parentRuntimeCfg, cmd, successOutput, failOutput, args);
     }
 
+    public static class SuccessOrFailure implements Consumer<String> {
+        private static final Logger LOGGER = getLogger (SuccessOrFailure.class);
+        private final String successOutput;
+        private final Set<String> failureOutput;
+        private final AtomicBoolean isSuccess = new AtomicBoolean (false);
+        private final AtomicBoolean isFailure = new AtomicBoolean (false);
+        private final Command cmd;
+        private String failureFound;
+        private final AtomicLong lineCounter = new AtomicLong (0);
+        private final StringWriter outputWriter = new StringWriter ();
+
+        public SuccessOrFailure (Command cmd, String successOutput, Set<String> failureOutput) {
+            this.successOutput = Objects.requireNonNull (successOutput, "successOutput cannot be null").toLowerCase ();
+            this.failureOutput = Objects.requireNonNull (failureOutput, "failureOutput cannot be null").stream ().map (String::toLowerCase).collect (Collectors.toSet ());
+            this.cmd = Objects.requireNonNull (cmd, "cmd cannot be null");
+        }
+
+        @Override
+        public void accept (String s) {
+            outputWriter.append (s).append ("\n");
+            String filter = s.toLowerCase ();
+            long lineNo = lineCounter.incrementAndGet ();
+            if (!successOutput.isEmpty () && filter.contains (successOutput)) {
+                if (!this.isSuccess.compareAndSet (false, true)) {
+                    LOGGER.info ("[{}]: line {}/success: {}/failure: {} - caught success output: {}", cmd, lineNo, this.isSuccess.get(), this.isFailure.get(), s);
+                }
+                else {
+                    synchronized (this) {
+                        this.notifyAll ();
+                    }
+                }
+            }
+            else if (failureOutput.stream().anyMatch(filter::contains)) {
+                if (!this.isFailure.compareAndSet(false, true)) {
+                    LOGGER.warn ("[{}]: line {}/success: {}/failure: {} - caught failure output: {}", cmd, lineNo, this.isSuccess.get(), this.isFailure.get(), s);
+                    failureFound = s;
+                }
+                else {
+                    synchronized (this) {
+                        this.notifyAll ();
+                    }
+                }
+            }
+            else {
+                LOGGER.debug ("[{}]: line {}/success: {}/failure: {} - caught output: {}", cmd, lineNo, this.isSuccess.get(), this.isFailure.get(), filter);
+            }
+        }
+
+        public boolean isInitWithSuccess () {
+            return this.isSuccess.get ();
+        }
+
+        public boolean isInitWithFailure() {
+            return this.isFailure.get();
+        }
+
+        public String getFailureFound() {
+            return this.failureFound;
+        }
+
+        public String getOutput() {
+            return outputWriter.toString();
+        }
+
+        public synchronized void waitForResult(long defaultCmdTimeout) {
+            long sarted = System.currentTimeMillis();
+            try {
+                this.wait(defaultCmdTimeout);
+            }
+            catch (InterruptedException e) {
+                LOGGER.warn("Command {} interrupted", cmd);
+                if (this.isFailure.compareAndSet(false, true)) {
+                    // When interrupted, just
+                    this.notifyAll();
+                }
+            }
+            finally {
+                long finished = System.currentTimeMillis();
+                if (!this.isSuccess.get() && !this.isFailure.get()) {
+                    LOGGER.warn("[{}] command timeout after {}ms", cmd, finished - sarted);
+                }
+                else if (this.isSuccess.get() || this.isFailure.get()) {
+                    LOGGER.warn("[{}] command detected after {}ms", cmd, finished - sarted);
+                }
+            }
+        }
+
+        public synchronized void close() {
+            this.notifyAll();
+        }
+    }
+
     private static String runCmd(boolean silent,
                                  PostgresConfig config, RuntimeConfig parentRuntimeCfg, Command cmd, String successOutput,
                                  Set<String> failOutput, String... args) {
+        SuccessOrFailure logWatch = new SuccessOrFailure(cmd, successOutput, failOutput);
+
         try {
-            final Slf4jStreamProcessor destination = new Slf4jStreamProcessor (LOGGER, Slf4jLevel.TRACE);
-            final LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor(successOutput, failOutput, destination);
+            final Slf4jStreamProcessor destination = new Slf4jStreamProcessor(LOGGER, Slf4jLevel.INFO);
+            final ListeningStreamProcessor logWatchProcessor = new ListeningStreamProcessor(destination, logWatch);
 
             final PostgresArtifactStore artifactStore = (PostgresArtifactStore) parentRuntimeCfg.artifactStore();
             final PostgresArtifactStoreBuilder artifactStoreBuilder = new PostgresArtifactStoreBuilder(ImmutableArtifactStore.builder().from(artifactStore));
@@ -82,13 +181,14 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 tempDir = ((PackagePaths) downloadCfg.getPackageResolver()).getTempDir();
             }
             builderDownloadConfig.packageResolver(new PackagePaths(cmd, tempDir));
-            final ArtifactStore newArtifactoryStore = artifactStoreBuilder.build (builder -> builder.downloadConfig(builderDownloadConfig.build ()).build ());
+            final ArtifactStore newArtifactoryStore = artifactStoreBuilder.build (builder -> builder.downloadConfig(builderDownloadConfig.build()).build());
 
             final RuntimeConfig runtimeCfg = new RuntimeConfigBuilder().defaults(cmd)
-                    .isDaemonProcess(false)
-                    .processOutput(ProcessOutput.builder().output(logWatch).error(logWatch).commands(logWatch).build())
-                    .artifactStore(newArtifactoryStore)
-                    .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor()).build();
+                                                                       .isDaemonProcess(false)
+                                                                       .processOutput(ProcessOutput.builder().output(logWatchProcessor).error(logWatchProcessor).commands(logWatchProcessor).build())
+                                                                       .artifactStore(newArtifactoryStore)
+                                                                       .commandLinePostProcessor(parentRuntimeCfg.commandLinePostProcessor ())
+                                                                       .build();
 
             final PostgresConfig postgresConfig = new PostgresConfig(config).withArgs(args);
             final Executable<?, ? extends AbstractPGProcess> exec = getCommand(cmd, runtimeCfg)
@@ -104,34 +204,20 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 }
             }).whenComplete((Integer exitCode, Throwable error) -> {
                 if (exitCode != 0) {
-                    LOGGER.warn("Exit code {}: {}({})", cmd, exitCode, Integer.toHexString (exitCode), error);
+                    LOGGER.warn("Exit code {}: {}({})", cmd, exitCode, Integer.toHexString(exitCode), error);
                 }
+                logWatch.close();
             });
-            String output;
-            boolean initWithSuccess;
-            String failureFound;
             do {
-                initWithSuccess = logWatch.isInitWithSuccess();
-                failureFound = logWatch.getFailureFound();
-                if (!initWithSuccess && Objects.isNull(failureFound)) {
-                    logWatch.waitForResult(DEFAULT_CMD_TIMEOUT);
-                    initWithSuccess = logWatch.isInitWithSuccess();
-                    failureFound = logWatch.getFailureFound();
-                    LOGGER.info("Caught output: {} {}", initWithSuccess, failureFound);
-                }
-                output = logWatch.getOutput();
-                if (f2.isDone() && proc.isProcessRunning()) {
-                    LOGGER.warn("Process {} waiting finished but it is still running", cmd);
-                }
-                if (!"<EOF>".equals(Objects.requireNonNullElse(failureFound, "<EOF>"))) {
-                    break;
-                }
-            } while (proc.isProcessRunning() && !initWithSuccess && Objects.isNull(failureFound));
-            if (!initWithSuccess && !silent) {
-                LOGGER.warn("Possibly failed to run {} {}:\n{}", cmd.commandName(), failureFound, output);
+                logWatch.waitForResult(config.timeout().startupTimeout());
+            } while (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && proc.isProcessRunning());
+
+            if (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && !silent && !proc.isProcessRunning()) {
+                LOGGER.warn("Possibly failed to run {} {}:", cmd.commandName(), logWatch.getFailureFound());
+                LOGGER.warn("{}", logWatch.getOutput());
             }
-            return output;
-        } catch (IOException e) {
+            return logWatch.getOutput();
+        } catch(IOException e) {
             if (!silent) {
                 LOGGER.warn("Failed to run command {}", cmd, e);
             }
@@ -294,10 +380,10 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                                    runtimeConfig,
                                    CreateDb,
                                    "",
-                                   new HashSet<>(singleton("database creation failed")),
+                                   new HashSet<>(Set.of("database creation failed", "createdb: error:")),
                                    storage.dbName());
             try {
-                if (isEmpty(output) || !output.contains("could not connect to database")) {
+                if (isEmpty(output) || (!output.contains("could not connect to database") && !output.contains("createdb: error:"))) {
                     this.processReady = true;
                     break;
                 }
