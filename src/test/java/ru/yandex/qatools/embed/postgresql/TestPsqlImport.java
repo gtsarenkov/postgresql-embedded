@@ -3,9 +3,12 @@ package ru.yandex.qatools.embed.postgresql;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -17,7 +20,9 @@ public class TestPsqlImport extends AbstractPsqlTest {
 
     @Test
     public void testPsqlImport() throws Exception {
-        process.importFromFile(new File("src/test/resources/test.backup"));
+        URL backupResourceUrl = TestPsqlImport.class.getResource("/test.backup");
+        File file = Objects.nonNull(backupResourceUrl) ? Paths.get(backupResourceUrl.toURI()).toFile() : new File("src/test/resources/test.backup");
+        process.importFromFile(file);
         assertThat(conn, not(nullValue()));
 
         Statement statement = conn.createStatement();

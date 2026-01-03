@@ -3,9 +3,12 @@ package ru.yandex.qatools.embed.postgresql;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -25,7 +28,9 @@ public class TestPsqlRestore extends AbstractPsqlTest{
 
     @Test
     public void testPsqlRestore() throws Exception {
-        process.restoreFromFile(new File("src/test/resources/test.binary_dump"));
+        URL backupResourceUrl = TestPsqlRestore.class.getResource("/test.binary_dump");
+        File file = Objects.nonNull(backupResourceUrl) ? Paths.get(backupResourceUrl.toURI()).toFile() : new File("src/test/resources/test.binary_dump");
+        process.restoreFromFile(file);
         assertThat(conn, not(nullValue()));
 
         Statement statement = conn.createStatement();

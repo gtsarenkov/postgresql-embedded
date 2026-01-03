@@ -100,8 +100,7 @@ public class EmbeddedPostgresTest {
     }
 
     private void ensurePostgresIsWorking(String url) {
-        try {
-            final Connection conn = DriverManager.getConnection(url);
+        try (final Connection conn = DriverManager.getConnection(url)) {
             assertThat(conn.createStatement().execute("CREATE TABLE films (code char(5));"), is(false));
             assertThat(conn.createStatement().execute("INSERT INTO films VALUES ('movie');"), is(false));
             final Statement statement = conn.createStatement();

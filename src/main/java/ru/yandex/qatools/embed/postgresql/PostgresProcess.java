@@ -375,22 +375,28 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
         }
 
         int trial = 0;
-        do {
-            String output = runCmd(getConfig(),
-                                   runtimeConfig,
-                                   CreateDb,
-                                   "",
-                                   new HashSet<>(Set.of("database creation failed", "createdb: error:")),
-                                   storage.dbName());
-            try {
-                if (isEmpty(output) || (!output.contains("could not connect to database") && !output.contains("createdb: error:"))) {
-                    this.processReady = true;
-                    break;
-                }
-                LOGGER.warn("Could not create database first time ({} of {} trials)", trial, MAX_CREATEDB_TRIALS);
-                sleep(100);
-            } catch (InterruptedException ie) { /* safe to ignore */ }
-        } while (trial++ < MAX_CREATEDB_TRIALS);
+        try {
+            // Let 5 seconds for postges to bootstrap.
+            sleep (5000L);
+            do {
+                String output = runCmd(getConfig(),
+                                       runtimeConfig,
+                                       CreateDb,
+                                       "",
+                                       new HashSet<>(Set.of("database creation failed", "createdb: error:")),
+                                       storage.dbName());
+                try {
+                    if (isEmpty(output) || (!output.contains("could not connect to database") && !output.contains("createdb: error:"))) {
+                        this.processReady = true;
+                        break;
+                    }
+                    LOGGER.warn("Could not create database first time ({} of {} trials)", trial, MAX_CREATEDB_TRIALS);
+                    sleep(100);
+                } catch (InterruptedException ie) { /* safe to ignore */ }
+            } while (trial++ < MAX_CREATEDB_TRIALS);
+        }
+        catch (InterruptedException e) {
+        }
     }
 
     /**

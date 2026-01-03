@@ -38,6 +38,8 @@
       <FileNamePattern>postgresql-embedded.debug.log.%i</FileNamePattern>
     </rollingPolicy>
   </appender>
+  <logger name="org.postgresql" level="DEBUG"/>
+  <logger name="java.lang.ProcessBuilder" level="INFO"/>
   <root level="DEBUG">
     <appender-ref ref="stdout"/>
     <appender-ref ref="stderr"/>
