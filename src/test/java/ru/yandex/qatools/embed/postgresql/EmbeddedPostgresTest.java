@@ -3,6 +3,7 @@ package ru.yandex.qatools.embed.postgresql;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -23,6 +24,35 @@ import static ru.yandex.qatools.embed.postgresql.EmbeddedPostgres.DEFAULT_USER;
 import static ru.yandex.qatools.embed.postgresql.EmbeddedPostgres.cachedRuntimeConfig;
 
 public class EmbeddedPostgresTest {
+    static {
+        // Force logback setup.
+        org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        // JUL to Logback bridge
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+        diagnoseLoggingPropagation();
+    }
+
+    public static void diagnoseLoggingPropagation () {
+        System.Logger logger = System.getLogger("java.lang.ProcessBuilder");
+        System.out.println("JDK ProcessBuilder Logger Class: " + logger.getClass().getName());
+        System.out.println("Is DEBUG enabled in JDK? " + logger.isLoggable(System.Logger.Level.DEBUG));
+
+        logger = System.getLogger("java.lang.ProcessBuilder");
+        System.out.println("JDK ProcessBuilder Logger Class: " + logger.getClass().getName());
+        System.out.println("Is DEBUG enabled in JDK? " + logger.isLoggable(System.Logger.Level.DEBUG));
+
+        java.util.logging.Logger julLogger = java.util.logging.Logger.getLogger("java.lang.ProcessBuilder");
+        System.out.println("JUL Level: " + julLogger.getLevel());
+        System.out.println("Handlers count: " + julLogger.getHandlers().length);
+        for (java.util.logging.Handler handler : julLogger.getHandlers()) {
+            System.out.println("Attached Handler: " + handler.getClass().getName());
+        }
+
+        org.slf4j.Logger slf4jLogger = org.slf4j.LoggerFactory.getLogger("java.lang.ProcessBuilder");
+        System.out.println("SLF4J Logger Class: " + slf4jLogger.getClass().getName());
+        System.out.println("Is SLF4J DEBUG enabled? " + slf4jLogger.isDebugEnabled());
+    }
 
     private EmbeddedPostgres postgres;
 
