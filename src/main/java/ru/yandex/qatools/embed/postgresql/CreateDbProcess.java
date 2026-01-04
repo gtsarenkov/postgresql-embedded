@@ -3,6 +3,8 @@ package ru.yandex.qatools.embed.postgresql;
 import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.List;
  * (helper to initialize the DB)
  */
 class CreateDbProcess extends AbstractPGProcess<CreateDbExecutable, CreateDbProcess> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDbProcess.class);
 
     public CreateDbProcess(Distribution distribution, PostgresConfig config, RuntimeConfig runtimeConfig, CreateDbExecutable executable) throws IOException {
         super(distribution, config, runtimeConfig, executable);
@@ -29,6 +32,9 @@ class CreateDbProcess extends AbstractPGProcess<CreateDbExecutable, CreateDbProc
                 "-h", config.net().host(),
                 "-p", String.valueOf(config.net().port())
         ));
+        if (LOGGER.isDebugEnabled()) {
+            ret.add("--echo");
+        }
         ret.add(config.storage().dbName());
 
         return ret;
