@@ -4,11 +4,12 @@ plugins {
   id 'com.github.jk1.dependency-license-report'
   id "org.owasp.dependencycheck"
   id "com.github.spotbugs"
+  id "ivy-publish"
+  id 'maven-publish'
+  id "java"
+  id 'idea'
+  id 'eclipse'
 }
-apply plugin: "java"
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
 
 group = "ru.yandex.qatools.embed"
 version = "${embedProcessVersion}-SNAPSHOT"
@@ -142,5 +143,25 @@ if (rootProject.equals(project)) {
 if (tasks.findByName("allDeps") == null) {
   tasks.register("allDeps", DependencyReportTask).configure {
     description "Prints all dependencies for all configurations"
+  }
+}
+
+publishing {
+  publications {
+    ivy(IvyPublication) {
+      from components.java
+    }
+  }
+  repositories {
+    ivy {
+      // Define the grandparent folder as the destination
+      url = layout.projectDirectory.asFile.parentFile.parentFile.toURI()
+
+      // Standard Ivy pattern: [organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]
+      patternLayout {
+        artifact "[artifact]-[revision](-[classifier]).[ext]"
+        ivy "ivy-[revision].xml"
+      }
+    }
   }
 }

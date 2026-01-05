@@ -4,7 +4,7 @@ import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.process.ImmutableProcessOutput;
 import de.flapdoodle.embed.process.distribution.Distribution;
 import de.flapdoodle.embed.process.extract.ExtractedFileSet;
-import de.flapdoodle.embed.process.io.LogWatchStreamProcessor;
+import de.flapdoodle.embed.process.io.ListeningStreamProcessor;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.Slf4jStreamProcessor;
 import de.flapdoodle.embed.process.runtime.Starter;
@@ -42,10 +42,9 @@ public class PostgresStarter<E extends AbstractPGExecutable<PostgresConfig, P>, 
     }
 
     public static RuntimeConfig runtimeConfig(Command cmd) {
-        LogWatchStreamProcessor logWatch = new LogWatchStreamProcessor (
-                "started", new HashSet<>(singletonList("failed")),
-                new Slf4jStreamProcessor(getLogger("postgres"), Slf4jLevel.TRACE));
-        return new RuntimeConfigBuilder ()
+        ListeningStreamProcessor logWatch = new ListeningStreamProcessor(new Slf4jStreamProcessor(getLogger("postgres"), Slf4jLevel.TRACE),
+                                                                         new SuccessOrFailure(cmd, "started", new HashSet<>(singletonList ("failed"))));
+        return new RuntimeConfigBuilder()
             .defaults(cmd)
             .processOutput(ImmutableProcessOutput.builder().output(logWatch).error(logWatch).commands(logWatch).build()).build();
     }

@@ -1,6 +1,5 @@
 target
 temp/
-velocity.log
 *~
 .classpath
 .project
@@ -21,3 +20,4 @@ out/*
 .gradle
 build/*
 *.bak
+*.log
