@@ -170,7 +170,7 @@ public class EmbeddedPostgres implements AutoCloseable {
      */
     public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
                         List<String> additionalParams) throws IOException {
-        return start(runtimeConfig, host, port, dbName, user, password, additionalParams, DEFAULT_POSTGRES_PARAMS, DEFAULT_POSTGRES_STOP_TIMEOUT);
+        return start(runtimeConfig, host, port, dbName, user, password, additionalParams, DEFAULT_POSTGRES_PARAMS, new AbstractPostgresConfig.Timeout().startupTimeout (), DEFAULT_POSTGRES_STOP_TIMEOUT);
     }
 
     /**
@@ -188,12 +188,12 @@ public class EmbeddedPostgres implements AutoCloseable {
      * @throws IOException if an I/O error occurs during the process startup
      */
     public String start(RuntimeConfig runtimeConfig, String host, int port, String dbName, String user, String password,
-                        List<String> additionalInitDbParams, List<String> additionalPostgresParams, Long stopTimeoutInMillis) throws IOException {
+                        List<String> additionalInitDbParams, List<String> additionalPostgresParams, Long timeout, Long stopTimeoutInMillis) throws IOException {
         final PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
         config = new PostgresConfig(version,
                 new AbstractPostgresConfig.Net(host, port),
                 new AbstractPostgresConfig.Storage(dbName, dataDir),
-                new AbstractPostgresConfig.Timeout(),
+                new AbstractPostgresConfig.Timeout(timeout),
                 new AbstractPostgresConfig.Credentials(user, password),
                 stopTimeoutInMillis
         );
