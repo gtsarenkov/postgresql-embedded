@@ -28,6 +28,10 @@ public abstract class AbstractPGProcess<E extends Executable<PostgresConfig, P>,
          */
         processBuilder.redirectErrorStream(true);
         // enf-of-bugfix
+
+        // We start all processes with English to get correct error messages to match in logs
+        processBuilder.environment().put("LANG", "en_US.UTF-8");
+        processBuilder.environment().put("LC_ALL", "en_US.UTF-8");
         if (config.credentials() != null) {
             processBuilder.environment().put("PGUSER", config.credentials().username());
             processBuilder.environment().put("PGPASSWORD", config.credentials().password());
