@@ -53,6 +53,14 @@ class InitDbProcess<E extends InitDbExecutable> extends AbstractPGProcess<E, Ini
     }
 
     @Override
+    protected void onBeforeProcessStart (ProcessBuilder processBuilder, PostgresConfig config, RuntimeConfig runtimeConfig) {
+        super.onBeforeProcessStart (processBuilder, config, runtimeConfig);
+        if (config.storage ().dbDir ().exists ()) {
+            LOGGER.warn ("PGDATA directory {} already exists !!!!", config.storage ().dbDir ().getAbsolutePath ());
+        }
+    }
+
+    @Override
     protected List<String> getCommandLine(Distribution distribution, PostgresConfig config, ExtractedFileSet exe)
             throws IOException {
         List<String> ret = new ArrayList<>();
