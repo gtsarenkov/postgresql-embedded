@@ -115,7 +115,10 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
                 logWatch.waitForResult(config.timeout().startupTimeout());
             } while (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && proc.isProcessRunning());
 
-            if (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && !silent && !proc.isProcessRunning()) {
+            if (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && proc.isProcessRunning() && isEmpty(successOutput)) {
+                LOGGER.debug("Postgres process does not have any specific success output (e.g. createdb), just waited for completion");
+                return null;
+            } else if (!logWatch.isInitWithSuccess() && !logWatch.isInitWithFailure() && !silent && !proc.isProcessRunning()) {
                 LOGGER.warn("Possibly failed to run {} {}:", cmd.commandName(), logWatch.getFailureFound());
                 LOGGER.warn("{}", logWatch.getOutput());
             }
