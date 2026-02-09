@@ -198,8 +198,14 @@ public class PostgresProcess extends AbstractPGProcess<PostgresExecutable, Postg
 
         final File     dbDir   = config.storage().dbDir();
         final File[] dbFiles = dbDir.listFiles();
-        if (dbDir.exists() && dbFiles != null && dbFiles.length > 0) {
-            return;
+        if (dbDir.exists()) {
+            if (dbFiles != null && dbFiles.length > 0) {
+                return;
+            }
+            else {
+                // Empty database folder. We need to remove the directory and let initdb create it.
+                forceDelete(dbDir);
+            }
         }
 
         runCmd(config, runtimeConfig, InitDb, "Success", singleton("[initdb error]"));

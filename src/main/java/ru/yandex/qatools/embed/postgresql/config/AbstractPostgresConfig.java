@@ -175,6 +175,7 @@ public abstract class AbstractPostgresConfig<C extends AbstractPostgresConfig<?>
 
         public Storage(String dbName, String databaseDir) throws IOException {
             this.dbName = dbName;
+            // TODO: database directory must be created by initdb process to avoid permission clash under windows.
             if (isEmpty(databaseDir)) {
                 isTmpDir = true;
                 dbDir = Files.createTempDir(SubdirTempDir.defaultInstance(), "db-content");
